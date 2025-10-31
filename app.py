@@ -1487,9 +1487,9 @@ class CloudStorageManager:
             return list(dict(sorted(filtered_words.items(), key=lambda x: x[1], reverse=True)[:top_k]).keys())
     
     def generate_summary(self, text: str, max_length: int = 200) -> str:
-        """使用真正的AI生成文档摘要"""
+        """Generate document summary (model first, fallback to rules)."""
         if not text:
-            return "无法生成摘要"
+            return "Unable to generate summary"
         
         # 方法1: 使用T5模型生成摘要（如果可用）
         if self.summarizer and len(text) > 50:
@@ -1505,9 +1505,9 @@ class CloudStorageManager:
                 
                 if summary_result and len(summary_result) > 0:
                     ai_summary = summary_result[0]['summary_text']
-                    return f"🤖 AI摘要: {ai_summary}"
+                    return f"🤖 AI Summary: {ai_summary}"
             except Exception as e:
-                st.warning(f"T5摘要生成失败: {str(e)}")
+                st.warning(f"T5 summarization failed: {str(e)}")
         
         # 方法2: 使用OpenAI GPT（如果可用）
         if OPENAI_AVAILABLE and len(text) > 100:
@@ -1516,12 +1516,12 @@ class CloudStorageManager:
                 # 暂时跳过，因为需要API密钥
                 pass
             except Exception as e:
-                st.warning(f"OpenAI摘要生成失败: {str(e)}")
+                st.warning(f"OpenAI summarization failed: {str(e)}")
         
         # 方法3: 智能句子选择（改进的规则方法）
         try:
             # 使用更智能的句子选择
-            sentences = re.split(r'[。！？]', text)
+            sentences = re.split(r'[。！？.!?]', text)
             sentences = [s.strip() for s in sentences if s.strip() and len(s) > 10]
             
             if len(sentences) <= 2:
@@ -1552,7 +1552,7 @@ class CloudStorageManager:
             if len(summary) > max_length:
                 summary = summary[:max_length] + "..."
             
-            return f"📝 智能摘要: {summary}"
+            return f"📝 Smart summary: {summary}"
         except:
             # 方法4: 简单截取（最后备用）
             return text[:max_length] + "..." if len(text) > max_length else text
@@ -1563,10 +1563,12 @@ class CloudStorageManager:
         extracted_text = self.extract_text_from_file(file_id)
         
         if not extracted_text:
-            return {"success": False, "error": "无法提取文本内容"}
+            return {"success": False, "error": "Unable to extract text"}
         
         # 行业分类
         classification = self.classify_industry(extracted_text)
+        if isinstance(classification, dict) and 'category' in classification:
+            classification['category'] = self._to_english_category(classification['category'])
         
         # 提取关键短语
         key_phrases = self.extract_key_phrases(extracted_text)
