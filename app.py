@@ -479,6 +479,18 @@ class CloudStorageManager:
         
         conn.commit()
         conn.close()
+
+    def _to_english_category(self, category: str) -> str:
+        mapping = {
+            "种植业": "Planting",
+            "畜牧业": "Livestock",
+            "农资与土壤": "Inputs-Soil",
+            "农业金融": "Agri-Finance",
+            "供应链与仓储": "SupplyChain-Storage",
+            "气候与遥感": "Climate-RemoteSensing",
+            "农业物联网": "Agri-IoT",
+        }
+        return mapping.get(category, category)
     
     def generate_smart_report(self, file_id: int) -> Dict[str, Any]:
         """生成智能报告和图表"""
@@ -1611,8 +1623,9 @@ class CloudStorageManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        # 检查文件夹是否已存在
-        cursor.execute('SELECT id FROM folders WHERE folder_name = ?', (f"AI分类_{category}",))
+        # 检查文件夹是否已存在（英文命名）
+        eng_category = self._to_english_category(category)
+        cursor.execute('SELECT id FROM folders WHERE folder_name = ?', (f"AI_{eng_category}",))
         result = cursor.fetchone()
         
         if result:
@@ -1621,7 +1634,7 @@ class CloudStorageManager:
             cursor.execute('''
                 INSERT INTO folders (folder_name, parent_folder_id)
                 VALUES (?, ?)
-            ''', (f"AI分类_{category}", None))
+            ''', (f"AI_{eng_category}", None))
             folder_id = cursor.lastrowid
         
         conn.commit()
