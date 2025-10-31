@@ -8,7 +8,7 @@ import base64
 import io
 import time
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 import zipfile
 import shutil
@@ -57,8 +57,8 @@ except ImportError:
 
 # Set page config with premium aesthetics
 st.set_page_config(
-    page_title="AI Cloud Storage System",
-    page_icon="☁️",
+    page_title="Agribusiness Expert AI Cloud",
+    page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -191,6 +191,11 @@ class CloudStorageManager:
         
         # 初始化AI功能
         self.init_ai_models()
+        
+        # 天气缓存
+        self.latest_weather: Optional[Dict[str, Any]] = None
+        # 遥感缓存
+        self.latest_remote_sensing: Optional[Dict[str, Any]] = None
     
     def init_database(self):
         """初始化数据库"""
@@ -270,15 +275,15 @@ class CloudStorageManager:
     
     def init_ai_models(self):
         """初始化AI模型"""
-        # 初始化行业分类关键词（备用方案）
+        # 初始化行业分类关键词（Agribusiness细分，补充非洲常见作物/要素）
         self.industry_keywords = {
-            "农业": ["土壤", "作物", "种植", "农业", "农田", "肥料", "农药", "收获", "产量", "种子"],
-            "制造业": ["生产", "制造", "工厂", "设备", "工艺", "质量", "检测", "装配", "加工", "产品"],
-            "医疗": ["医疗", "医院", "患者", "诊断", "治疗", "药物", "手术", "检查", "病历", "健康"],
-            "教育": ["学校", "学生", "教师", "课程", "教学", "学习", "考试", "成绩", "教育", "培训"],
-            "金融": ["银行", "投资", "财务", "会计", "资金", "贷款", "保险", "股票", "基金", "理财"],
-            "建筑": ["建筑", "工程", "施工", "设计", "材料", "结构", "装修", "房地产", "建设", "规划"],
-            "科技": ["技术", "软件", "系统", "数据", "网络", "开发", "程序", "算法", "人工智能", "创新"]
+            "种植业": ["作物", "玉米", "小米", "高粱", "水稻", "木薯", "山药", "红薯", "花生", "芝麻", "葵花籽", "棉花", "可可", "咖啡", "茶叶", "香蕉", "芒果", "菠萝", "蔬菜", "果园", "产量", "单产", "公顷", "亩", "播种", "收获", "灌溉", "病虫害", "除草", "密度"],
+            "畜牧业": ["生猪", "牛羊", "家禽", "奶牛", "出栏", "存栏", "饲料", "日龄", "增重", "料肉比", "免疫", "兽药", "疫病", "繁育", "犊牛", "屠宰"],
+            "农资与土壤": ["肥料", "氮肥", "磷肥", "钾肥", "配方施肥", "有机质", "pH", "土壤盐分", "微量元素", "保水", "覆盖", "深松", "秸秆还田"],
+            "农业金融": ["采购", "成本", "贷款", "保单", "保险", "赔付", "保费", "授信", "现金流", "应收", "应付", "利润", "毛利率", "价格", "期货"],
+            "供应链与仓储": ["冷链", "仓储", "物流", "运输", "库容", "损耗", "周转", "交付", "订单", "批次", "追溯"],
+            "气候与遥感": ["降雨", "降水", "温度", "积温", "蒸散", "干旱", "NDVI", "EVI", "卫星", "遥感", "气象站", "辐射", "沙漠蝗虫", "草地贪夜蛾"],
+            "农业物联网": ["传感器", "湿度", "含水率", "EC", "阈值", "阀门", "泵站", "滴灌", "喷灌", "自动化", "报警"]
         }
         
         # 初始化OCR模型
@@ -348,6 +353,108 @@ class CloudStorageManager:
         
         # 初始化默认行业分类
         self.init_default_categories()
+
+    def fetch_weather_summary(self, latitude: float, longitude: float) -> Dict[str, Any]:
+        """从 Open-Meteo 获取未来7天的气象摘要（无需API密钥）"""
+        try:
+            url = (
+                "https://api.open-meteo.com/v1/forecast"
+                f"?latitude={latitude}&longitude={longitude}"
+                "&hourly=temperature_2m,precipitation"
+                "&daily=precipitation_sum,temperature_2m_max,temperature_2m_min"
+                "&forecast_days=7&timezone=auto"
+            )
+            resp = requests.get(url, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+            daily = data.get("daily", {})
+            result = {
+                "location": {"lat": latitude, "lon": longitude},
+                "precipitation_sum": daily.get("precipitation_sum", []),
+                "tmax": daily.get("temperature_2m_max", []),
+                "tmin": daily.get("temperature_2m_min", []),
+                "dates": daily.get("time", [])
+            }
+            # 简要统计
+            try:
+                total_rain = float(sum(x for x in result["precipitation_sum"] if isinstance(x, (int, float))))
+            except Exception:
+                total_rain = 0.0
+            result["summary"] = {
+                "7d_total_rain_mm": round(total_rain, 1),
+                "avg_tmax": round(sum(result["tmax"]) / max(1, len(result["tmax"])), 1) if result["tmax"] else None,
+                "avg_tmin": round(sum(result["tmin"]) / max(1, len(result["tmin"])), 1) if result["tmin"] else None,
+            }
+            self.latest_weather = result
+            return {"success": True, "weather": result}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def compute_remote_sensing_stub(self, latitude: float, longitude: float, days: int = 30) -> Dict[str, Any]:
+        """遥感指数占位：生成近days天的NDVI/EVI简易时序（无需外部服务）。"""
+        try:
+            import math
+            base_date = datetime.now()
+            dates = [(base_date - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days-1, -1, -1)]
+            ndvi = []
+            evi = []
+            for i in range(days):
+                # 生成平滑的波动数据，范围做物理合理约束
+                v = 0.5 + 0.3 * math.sin(i/6.0) + 0.1 * math.sin(i/2.5)
+                ndvi.append(round(max(0.0, min(0.9, v)), 3))
+                e = 0.4 + 0.25 * math.sin(i/7.0 + 0.5)
+                evi.append(round(max(0.0, min(0.8, e)), 3))
+            summary = {
+                "ndvi_avg": round(sum(ndvi)/len(ndvi), 3) if ndvi else None,
+                "evi_avg": round(sum(evi)/len(evi), 3) if evi else None,
+                "ndvi_last": ndvi[-1] if ndvi else None,
+                "evi_last": evi[-1] if evi else None,
+            }
+            result = {
+                "location": {"lat": latitude, "lon": longitude},
+                "dates": dates,
+                "ndvi": ndvi,
+                "evi": evi,
+                "summary": summary,
+            }
+            self.latest_remote_sensing = result
+            return {"success": True, "remote_sensing": result}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def extract_agri_structured_fields(self, text: str) -> Dict[str, Any]:
+        """农业报表模板抽取（规则版占位）：作物、面积、日期、施肥/灌溉/用药/单产等。"""
+        if not text:
+            return {}
+        import re
+        fields: Dict[str, Any] = {}
+        try:
+            # 作物
+            m = re.search(r'(作物|品种|作物名称)[：:，]\s*([\u4e00-\u9fffA-Za-z0-9]+)', text)
+            if m: fields['作物'] = m.group(2)
+            # 面积（亩/公顷/ha）
+            m = re.search(r'(面积|播种面积|收获面积)[：:，]\s*([\d,.]+)\s*(亩|公顷|ha)', text)
+            if m: fields['面积'] = f"{m.group(2)} {m.group(3)}"
+            # 日期（简单识别 年-月-日 或 年/月/日 或 中文）
+            m = re.search(r'(日期|时间|记录时间)[：:，]\s*(\d{4}[-年/]\d{1,2}[-月/]\d{1,2})', text)
+            if m: fields['日期'] = m.group(2)
+            # 施肥
+            m = re.search(r'(施肥|肥料|配方施肥)[：:，]?\s*([\u4e00-\u9fffA-Za-z0-9]+)?\s*([\d,.]+)\s*(kg|公斤|斤)', text)
+            if m: fields['施肥'] = f"{(m.group(2) or '').strip()} {m.group(3)} {m.group(4)}".strip()
+            # 灌溉
+            m = re.search(r'(灌溉|浇水)[：:，]?\s*([\d,.]+)\s*(mm|立方|m3|方)', text)
+            if m: fields['灌溉'] = f"{m.group(2)} {m.group(3)}"
+            # 用药
+            m = re.search(r'(农药|用药|防治)[：:，]?\s*([\u4e00-\u9fffA-Za-z0-9]+)\s*([\d,.]+)\s*(ml|毫升|L|升|kg|克|g)', text)
+            if m: fields['用药'] = f"{m.group(2)} {m.group(3)} {m.group(4)}"
+            # 单产/产量
+            m = re.search(r'(单产|亩产)[：:，]\s*([\d,.]+)\s*(斤/亩|公斤/亩|kg/ha|t/ha)', text)
+            if m: fields['单产'] = f"{m.group(2)} {m.group(3)}"
+            m = re.search(r'(总产|产量)[：:，]\s*([\d,.]+)\s*(kg|吨|t)', text)
+            if m: fields['产量'] = f"{m.group(2)} {m.group(3)}"
+        except Exception:
+            pass
+        return fields
     
     def init_default_categories(self):
         """初始化默认行业分类"""
@@ -385,6 +492,7 @@ class CloudStorageManager:
             
             # 分析文档结构
             analysis = self.analyze_document_structure(text)
+            analysis["full_text"] = text
             
             # 提取数据点
             data_points = self.extract_data_points(text)
@@ -407,7 +515,7 @@ class CloudStorageManager:
             return {"success": False, "error": str(e)}
     
     def analyze_document_structure(self, text: str) -> Dict[str, Any]:
-        """分析文档结构，识别数据类型和关键信息"""
+        """分析文档结构，识别农业领域文档类型与要素"""
         analysis = {
             "document_type": "未知",
             "data_types": [],
@@ -417,24 +525,24 @@ class CloudStorageManager:
             "confidence": 0.0
         }
         
-        # 识别文档类型
-        if "销售" in text or "收入" in text or "营业额" in text:
-            analysis["document_type"] = "销售报告"
-            analysis["data_types"].extend(["数值", "百分比", "趋势"])
-        elif "财务" in text or "利润" in text or "成本" in text:
-            analysis["document_type"] = "财务报表"
-            analysis["data_types"].extend(["金额", "比率", "对比"])
-        elif "用户" in text or "客户" in text or "访问" in text:
-            analysis["document_type"] = "用户分析"
-            analysis["data_types"].extend(["数量", "增长率", "分布"])
-        elif "产品" in text or "库存" in text or "生产" in text:
-            analysis["document_type"] = "产品报告"
-            analysis["data_types"].extend(["数量", "状态", "分类"])
+        # 识别农业文档类型
+        if any(k in text for k in ["单产", "亩产", "t/ha", "kg/ha", "播种面积", "收获面积", "产量"]):
+            analysis["document_type"] = "种植业生产报告"
+            analysis["data_types"].extend(["面积", "产量", "单产", "趋势"])
+        elif any(k in text for k in ["出栏", "存栏", "增重", "日增重", "料肉比", "免疫"]):
+            analysis["document_type"] = "畜牧业生产报告"
+            analysis["data_types"].extend(["头数", "重量", "转换率", "免疫"])
+        elif any(k in text for k in ["降雨", "降水", "mm", "积温", "干旱", "NDVI", "遥感"]):
+            analysis["document_type"] = "气候与遥感监测"
+            analysis["data_types"].extend(["降雨", "温度", "指数", "时间序列"])
+        elif any(k in text for k in ["成本", "采购", "价格", "保险", "赔付", "利润", "毛利率"]):
+            analysis["document_type"] = "农业财务/供应链报告"
+            analysis["data_types"].extend(["金额", "比率", "对比", "价格趋势"])
         
         # 提取关键指标
         import re
-        # 查找数字模式
-        numbers = re.findall(r'[\d,]+\.?\d*', text)
+        # 查找数字模式（支持带单位）
+        numbers = re.findall(r'[\d,]+\.?\d*\s*(?:t/ha|kg/ha|kg|t|吨|公斤|元/斤|元/吨|mm)?', text)
         analysis["key_metrics"] = numbers[:10]  # 取前10个数字
         
         # 查找时间模式
@@ -445,30 +553,35 @@ class CloudStorageManager:
         category_patterns = re.findall(r'[A-Za-z\u4e00-\u9fff]+[：:]\s*[\d,]+', text)
         analysis["categories"] = category_patterns[:5]
         
-        # 计算置信度
-        confidence = min(len(analysis["key_metrics"]) * 0.1 + 
-                        len(analysis["time_periods"]) * 0.2 + 
+        # 计算置信度（农业场景稍微提高关键指标权重）
+        confidence = min(len(analysis["key_metrics"]) * 0.12 + 
+                        len(analysis["time_periods"]) * 0.18 + 
                         len(analysis["categories"]) * 0.1, 1.0)
         analysis["confidence"] = confidence
         
         return analysis
     
     def extract_data_points(self, text: str) -> List[Dict[str, Any]]:
-        """提取数据点用于生成图表"""
+        """提取数据点用于生成图表（增强农业单位识别）"""
         data_points = []
         
         import re
         
         # 提取数值和标签
         patterns = [
-            r'([A-Za-z\u4e00-\u9fff]+)[：:]\s*([\d,]+\.?\d*)',
-            r'([A-Za-z\u4e00-\u9fff]+)\s*([\d,]+\.?\d*)%',
-            r'([A-Za-z\u4e00-\u9fff]+)\s*为\s*([\d,]+\.?\d*)'
+            r'([A-Za-z\u4e00-\u9fff]+)[：:]\s*([\d,]+\.?\d*)\s*(t/ha|kg/ha|kg|t|吨|公斤|mm|%)?',
+            r'([A-Za-z\u4e00-\u9fff]+)\s*([\d,]+\.?\d*)\s*(%)',
+            r'([A-Za-z\u4e00-\u9fff]+)\s*为\s*([\d,]+\.?\d*)\s*(t/ha|kg/ha|kg|t|吨|公斤|mm|%)?'
         ]
         
         for pattern in patterns:
             matches = re.findall(pattern, text)
-            for label, value in matches:
+            for match in matches:
+                if len(match) == 3:
+                    label, value, unit = match
+                else:
+                    label, value = match
+                    unit = None
                 try:
                     # 清理数值
                     clean_value = float(value.replace(',', ''))
@@ -476,7 +589,7 @@ class CloudStorageManager:
                         data_points.append({
                             "label": label.strip(),
                             "value": clean_value,
-                            "type": "数值"
+                            "type": unit or "数值"
                         })
                 except ValueError:
                     continue
@@ -544,63 +657,149 @@ class CloudStorageManager:
         return charts
     
     def create_smart_report(self, analysis: Dict, charts: List[Dict], filename: str) -> str:
-        """生成智能报告"""
-        report = f"# 📊 智能分析报告\n\n"
-        report += f"**文件名称**: {filename}\n\n"
-        report += f"**文档类型**: {analysis['document_type']}\n\n"
-        report += f"**分析置信度**: {analysis['confidence']:.1%}\n\n"
+        """生成智能报告（加入农业洞察与KPI）"""
+        report = f"# 📊 Agribusiness Smart Analysis Report\n\n"
+        report += f"**File name**: {filename}\n\n"
+        report += f"**Document type**: {analysis['document_type']}\n\n"
+        report += f"**Confidence**: {analysis['confidence']:.1%}\n\n"
         
-        # 关键指标
+        # 农业KPI（从全文智能提取）
+        agrikpis = self.compute_agribusiness_kpis(analysis.get('full_text', '')) if isinstance(analysis, dict) else {}
+        if agrikpis:
+            report += "## 🌾 Agribusiness KPIs\n\n"
+            for k, v in agrikpis.items():
+                report += f"- {k}: {v}\n"
+            report += "\n"
+
+        # 天气摘要（如果已获取）
+        if getattr(self, 'latest_weather', None):
+            ws = self.latest_weather.get('summary', {})
+            report += "## ☁️ Climate summary (next 7 days)\n\n"
+            if ws:
+                if ws.get('7d_total_rain_mm') is not None:
+                    report += f"- Total rainfall: {ws['7d_total_rain_mm']} mm\n"
+                if ws.get('avg_tmax') is not None:
+                    report += f"- Avg Tmax: {ws['avg_tmax']} °C\n"
+                if ws.get('avg_tmin') is not None:
+                    report += f"- Avg Tmin: {ws['avg_tmin']} °C\n"
+            report += "\n"
+
+        # 遥感摘要（如果已获取）
+        if getattr(self, 'latest_remote_sensing', None):
+            rs = self.latest_remote_sensing.get('summary', {})
+            report += "## 🛰️ Remote sensing summary\n\n"
+            if rs:
+                if rs.get('ndvi_avg') is not None:
+                    report += f"- NDVI average: {rs['ndvi_avg']}\n"
+                if rs.get('evi_avg') is not None:
+                    report += f"- EVI average: {rs['evi_avg']}\n"
+                if rs.get('ndvi_last') is not None:
+                    report += f"- Latest NDVI: {rs['ndvi_last']}\n"
+                if rs.get('evi_last') is not None:
+                    report += f"- Latest EVI: {rs['evi_last']}\n"
+            report += "\n"
+
+        # 模板抽取结果
+        structured = self.extract_agri_structured_fields(analysis.get('full_text', '')) if isinstance(analysis, dict) else {}
+        if structured:
+            report += "## 🗂️ Structured fields (template extraction)\n\n"
+            for k, v in structured.items():
+                report += f"- {k}: {v}\n"
+            report += "\n"
+        
+        # Key metrics
         if analysis['key_metrics']:
-            report += "## 🔢 关键指标\n\n"
+            report += "## 🔢 Key metrics\n\n"
             for i, metric in enumerate(analysis['key_metrics'][:5], 1):
                 report += f"{i}. {metric}\n"
             report += "\n"
-        
-        # 时间维度
+
+        # Time periods
         if analysis['time_periods']:
-            report += "## 📅 时间维度\n\n"
-            report += f"发现的时间信息: {', '.join(analysis['time_periods'])}\n\n"
-        
-        # 分类信息
+            report += "## 📅 Time periods\n\n"
+            report += f"Detected time info: {', '.join(analysis['time_periods'])}\n\n"
+
+        # Categories
         if analysis['categories']:
-            report += "## 📋 分类信息\n\n"
+            report += "## 📋 Categories\n\n"
             for category in analysis['categories']:
                 report += f"- {category}\n"
             report += "\n"
-        
-        # 图表说明
+
+        # Visualization notes
         if charts:
-            report += "## 📈 数据可视化\n\n"
+            report += "## 📈 Data visualization\n\n"
             for chart in charts:
                 report += f"### {chart['title']}\n\n"
                 if chart['type'] == 'bar':
-                    report += "柱状图显示了不同类别的数值对比，便于识别最高和最低值。\n\n"
+                    report += "Bar chart shows value comparison across categories to spot highs and lows.\n\n"
                 elif chart['type'] == 'pie':
-                    report += "饼图展示了数据的分布比例，直观显示各部分占比。\n\n"
+                    report += "Pie chart shows proportion distribution for intuitive share comparison.\n\n"
                 elif chart['type'] == 'line':
-                    report += "折线图显示了数据的变化趋势，有助于识别增长或下降模式。\n\n"
-        
-        # 智能建议
-        report += "## 💡 智能建议\n\n"
-        if analysis['document_type'] == "销售报告":
-            report += "- 建议关注销售趋势变化\n"
-            report += "- 分析不同产品/地区的表现差异\n"
-            report += "- 制定针对性的销售策略\n"
-        elif analysis['document_type'] == "财务报表":
-            report += "- 关注财务指标的健康度\n"
-            report += "- 分析成本结构优化空间\n"
-            report += "- 制定财务风险控制措施\n"
-        elif analysis['document_type'] == "用户分析":
-            report += "- 分析用户增长趋势\n"
-            report += "- 识别用户行为模式\n"
-            report += "- 制定用户留存策略\n"
+                    report += "Line chart shows temporal trends to identify growth or decline patterns.\n\n"
+
+        # Suggestions
+        report += "## 💡 Suggestions\n\n"
+        if analysis['document_type'] in ["种植业生产报告", "畜牧业生产报告"]:
+            report += "- Track trends of key KPIs (yield, rainfall, FCR).\n"
+            report += "- Compare fields/lots or herds to find outliers.\n"
+            report += "- Plan interventions (fertigation, pest control) based on thresholds.\n"
+        elif analysis['document_type'] in ["农业财务/供应链报告"]:
+            report += "- Monitor margins and price trends.\n"
+            report += "- Optimize cost structure and inventory turnover.\n"
+            report += "- Manage risk with insurance/hedging where applicable.\n"
         else:
-            report += "- 建议定期更新数据分析\n"
-            report += "- 关注关键指标的变化趋势\n"
-            report += "- 制定数据驱动的决策流程\n"
+            report += "- Keep data updated regularly.\n"
+            report += "- Focus on KPI trends and anomalies.\n"
+            report += "- Apply data-driven decisions.\n"
         
         return report
+
+    def compute_agribusiness_kpis(self, text: str) -> Dict[str, Any]:
+        """基于规则快速提取农业常见KPI（轻量占位，可后续换模型）"""
+        if not text:
+            return {}
+        import re
+        kpis: Dict[str, Any] = {}
+        try:
+            # 单产（支持 kg/ha, t/ha, 亩产）
+            m = re.search(r'(单产|亩产)[:：]?\s*([\d,.]+)\s*(kg/ha|t/ha|公斤/亩|斤/亩|吨/公顷)?', text)
+            if m:
+                kpis['单产'] = f"{m.group(2)} {m.group(3) or ''}".strip()
+
+            # 面积（亩、公顷）
+            m = re.search(r'(播种面积|收获面积|面积)[:：]?\s*([\d,.]+)\s*(亩|公顷|ha)', text)
+            if m:
+                kpis['面积'] = f"{m.group(2)} {m.group(3)}"
+
+            # 降雨量（mm）
+            m = re.search(r'(降雨|降水|累计降雨|累计降水)[:：]?\s*([\d,.]+)\s*mm', text)
+            if m:
+                kpis['累计降雨'] = f"{m.group(2)} mm"
+
+            # 成本与利润
+            m = re.search(r'(总成本|成本)[:：]?\s*([\d,.]+)', text)
+            if m:
+                kpis['成本'] = m.group(2)
+            m = re.search(r'(利润|毛利|毛利率)[:：]?\s*([\d,.]+)\s*(%)?', text)
+            if m:
+                kpis['利润/毛利'] = f"{m.group(2)}{m.group(3) or ''}"
+
+            # 畜牧关键指标
+            m = re.search(r'(出栏|存栏)[:：]?\s*([\d,.]+)\s*(头|只)?', text)
+            if m:
+                kpis[m.group(1)] = f"{m.group(2)} {m.group(3) or ''}".strip()
+            m = re.search(r'(料肉比|FCR)[:：]?\s*([\d,.]+)', text)
+            if m:
+                kpis['料肉比'] = m.group(2)
+
+            # 遥感指数
+            m = re.search(r'(NDVI|EVI)[:：]?\s*([\d,.]+)', text)
+            if m:
+                kpis[m.group(1)] = m.group(2)
+        except Exception:
+            pass
+        return kpis
     
     def calculate_checksum(self, file_path: str) -> str:
         """计算文件校验和"""
@@ -820,7 +1019,7 @@ class CloudStorageManager:
             if progress_record:
                 # 断点续传
                 progress_id, uploaded_size, stored_checksum = progress_record
-                st.info(f"🔄 发现未完成的上传，从 {uploaded_size} 字节处继续...")
+                st.info(f"🔄 Resumable upload found, continue from {uploaded_size} bytes...")
             else:
                 # 新上传
                 uploaded_size = 0
@@ -848,7 +1047,7 @@ class CloudStorageManager:
                 current_size += len(chunk)
                 progress = current_size / file_size
                 progress_bar.progress(progress)
-                status_text.text(f"上传进度: {current_size}/{file_size} 字节 ({progress*100:.1f}%)")
+                status_text.text(f"Uploading: {current_size}/{file_size} bytes ({progress*100:.1f}%)")
                 
                 # 更新进度到数据库
                 if progress_id:
@@ -994,6 +1193,7 @@ class CloudStorageManager:
                     for page in doc:
                         extracted_text += page.get_text()
                     doc.close()
+                # 若不可用则保持为空，后续给出友好占位
             
             elif file_type == 'application' and filename.endswith(('.xlsx', '.xls')):
                 # Excel文件
@@ -1008,10 +1208,36 @@ class CloudStorageManager:
                             # 如果to_string失败，尝试其他方法
                             extracted_text = str(df.values.tolist())
                     else:
-                        extracted_text = "Excel文件为空"
+                        extracted_text = "Excel file is empty"
                 except Exception as e:
-                    st.warning(f"Excel文件读取失败: {str(e)}")
+                    st.warning(f"Excel reading failed: {str(e)}")
                     extracted_text = ""
+
+            elif filename.endswith('.csv'):
+                # CSV文件
+                try:
+                    df = pd.read_csv(file_path)
+                    if not df.empty:
+                        try:
+                            extracted_text = df.to_string()
+                        except Exception:
+                            extracted_text = str(df.values.tolist())
+                    else:
+                        extracted_text = "CSV file is empty"
+                except Exception as e:
+                    st.warning(f"CSV reading failed: {str(e)}")
+                    extracted_text = ""
+
+            elif filename.endswith('.docx'):
+                # DOCX（可选处理）
+                try:
+                    import docx  # type: ignore
+                    doc = docx.Document(file_path)
+                    paras = [p.text for p in doc.paragraphs if p.text]
+                    extracted_text = "\n".join(paras)
+                except Exception:
+                    # 未安装或解析失败则忽略
+                    pass
             
             elif file_type == 'image':
                 # 图片文件 - OCR识别
@@ -1021,9 +1247,9 @@ class CloudStorageManager:
                         st.info("🔄 Loading OCR model, please wait...")
                         try:
                             self.ocr_reader = easyocr.Reader(['ch_sim', 'en'])
-                            st.success("✅ OCR模型加载完成")
+                            st.success("✅ OCR model loaded")
                         except Exception as e:
-                            st.error(f"OCR模型加载失败: {str(e)}")
+                            st.error(f"OCR model load failed: {str(e)}")
                             return ""
                     
                     if self.ocr_reader:
@@ -1031,7 +1257,11 @@ class CloudStorageManager:
                         extracted_text = ' '.join([result[1] for result in results])
         
         except Exception as e:
-            st.error(f"文本提取失败: {str(e)}")
+            st.error(f"Text extraction failed: {str(e)}")
+        
+        # 兜底：仍无法提取文本时，返回占位文本，避免AI流程直接失败
+        if not extracted_text:
+            extracted_text = f"(No extractable text from file: {filename}. Try preview/download.)"
         
         return extracted_text
     
@@ -1053,13 +1283,13 @@ class CloudStorageManager:
                 
                 # 简单的标签映射（可以根据需要扩展）
                 label_mapping = {
-                    'LABEL_0': '科技',
-                    'LABEL_1': '医疗',
-                    'LABEL_2': '教育',
-                    'LABEL_3': '金融',
-                    'LABEL_4': '制造业',
-                    'LABEL_5': '农业',
-                    'LABEL_6': '建筑'
+                    'LABEL_0': '种植业',
+                    'LABEL_1': '畜牧业',
+                    'LABEL_2': '农资与土壤',
+                    'LABEL_3': '农业金融',
+                    'LABEL_4': '供应链与仓储',
+                    'LABEL_5': '气候与遥感',
+                    'LABEL_6': '农业物联网'
                 }
                 
                 mapped_category = label_mapping.get(bert_label, '未分类')
@@ -1149,13 +1379,13 @@ class CloudStorageManager:
     def _get_synonyms(self, category: str) -> List[str]:
         """获取行业分类的同义词"""
         synonyms_map = {
-            "农业": ["农", "田", "地", "粮", "食", "农作", "种植业", "农业技术"],
-            "制造业": ["制造", "生产", "加工", "工业", "工厂", "车间", "生产线"],
-            "医疗": ["医", "药", "病", "诊", "治", "健康", "医院", "医生", "患者"],
-            "教育": ["学", "教", "课", "师", "生", "校", "培训", "学习", "知识"],
-            "金融": ["钱", "财", "资", "投", "银", "股", "基金", "理财", "经济"],
-            "建筑": ["建", "房", "楼", "工", "施", "设", "房地产", "工程", "建设"],
-            "科技": ["技", "术", "软", "硬", "网", "数", "码", "创新", "研发"]
+            "种植业": ["种植", "耕作", "育秧", "移栽", "密植", "病虫害", "施肥", "灌溉", "田间管理", "玉米", "高粱", "小米", "木薯", "花生", "芝麻", "棉花", "可可", "咖啡"],
+            "畜牧业": ["养殖", "饲喂", "免疫", "防疫", "繁育", "断奶", "出栏", "存栏", "增重"],
+            "农资与土壤": ["配方施肥", "土壤改良", "施用量", "有机肥", "微量元素", "土壤养分"],
+            "农业金融": ["贴现", "授信", "保费", "赔付", "承保", "风控", "保单"],
+            "供应链与仓储": ["冷链运输", "损耗率", "批次追溯", "库容", "周转率", "分拣"],
+            "气候与遥感": ["降雨", "气温", "积温", "干旱指数", "NDVI", "EVI", "遥感", "沙漠蝗虫", "草地贪夜蛾"],
+            "农业物联网": ["含水率", "EC", "滴灌", "喷灌", "阀门", "阈值", "报警"]
         }
         return synonyms_map.get(category, [])
     
@@ -1590,7 +1820,7 @@ storage_manager = st.session_state.storage_manager
 
 # 侧边栏
 with st.sidebar:
-    st.markdown("### ☁️ AI Cloud Storage")
+    st.markdown("### 🌾 Agribusiness Expert AI Cloud")
     st.markdown("---")
     
     # 快速操作
@@ -1653,8 +1883,91 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # AI功能区域
-    st.markdown("### 🤖 AI Features")
+    # Agribusiness工具与AI功能区域
+    st.markdown("### 🌾 Agribusiness Tools & AI")
+    with st.expander("☁️ Weather & Climate (Open-Meteo)", expanded=False):
+        colw1, colw2 = st.columns(2)
+        with colw1:
+            lat = st.number_input("Latitude", value=0.0, step=0.1)
+        with colw2:
+            lon = st.number_input("Longitude", value=20.0, step=0.1)
+        if st.button("Fetch 7-Day Climate Summary", use_container_width=True):
+            with st.spinner("Fetching weather data..."):
+                res = storage_manager.fetch_weather_summary(lat, lon)
+                if res.get("success"):
+                    ws = res["weather"]["summary"]
+                    st.success("Weather updated")
+                    st.write({
+                        "7d total rainfall (mm)": ws.get("7d_total_rain_mm"),
+                        "Avg Tmax (°C)": ws.get("avg_tmax"),
+                        "Avg Tmin (°C)": ws.get("avg_tmin")
+                    })
+                else:
+                    st.error(f"Weather fetch failed: {res.get('error')}")
+
+    with st.expander("🛰️ Remote Sensing (NDVI/EVI)", expanded=False):
+        colr1, colr2, colr3 = st.columns(3)
+        with colr1:
+            rs_lat = st.number_input("Latitude", value=0.0, step=0.1, key="rs_lat")
+        with colr2:
+            rs_lon = st.number_input("Longitude", value=20.0, step=0.1, key="rs_lon")
+        with colr3:
+            rs_days = st.slider("Days", min_value=7, max_value=60, value=30, step=1, key="rs_days")
+        if st.button("Generate NDVI/EVI Timeseries", use_container_width=True):
+            with st.spinner("Generating NDVI/EVI (stub)..."):
+                res = storage_manager.compute_remote_sensing_stub(rs_lat, rs_lon, rs_days)
+                if res.get("success"):
+                    rs = res["remote_sensing"]
+                    st.success("Generated")
+                    if rs.get("dates") and rs.get("ndvi"):
+                        st.markdown("**NDVI**")
+                        ndvi_df = pd.DataFrame({"date": rs["dates"], "NDVI": rs["ndvi"]}).set_index("date")
+                        st.line_chart(ndvi_df)
+                    if rs.get("dates") and rs.get("evi"):
+                        st.markdown("**EVI**")
+                        evi_df = pd.DataFrame({"date": rs["dates"], "EVI": rs["evi"]}).set_index("date")
+                        st.line_chart(evi_df)
+                else:
+                    st.error(f"Remote sensing generation failed: {res.get('error')}")
+
+    with st.expander("🧮 Agri Quick Calculator", expanded=False):
+        st.caption("Quick estimation: total production & profit")
+        # 总产量 = 面积 × 单产（自动做少量单位适配）
+        colc1, colc2, colc3 = st.columns(3)
+        with colc1:
+            area_value = st.number_input("Area value", value=100.0, step=1.0)
+            area_unit = st.selectbox("Area unit", ["hectare(ha)", "mu"], index=0)
+        with colc2:
+            yield_value = st.number_input("Yield value", value=3.0, step=0.1)
+            yield_unit = st.selectbox("Yield unit", ["t/ha", "kg/ha", "kg/mu", "jin/mu"], index=0)
+        with colc3:
+            currency = st.selectbox("Currency", ["USD", "KES", "NGN", "ZAR", "GHS", "XOF", "XAF", "ETB", "TZS"], index=1)
+            price_value = st.number_input("Price (per kg)", value=0.5, step=0.05)
+            cost_value = st.number_input("Total cost", value=50000.0, step=1000.0)
+
+        if st.button("计算总产与利润", use_container_width=True):
+            # 单位换算到 公斤/亩
+            if yield_unit == "jin/mu":
+                yield_kg_per_mu = yield_value * 0.5
+            elif yield_unit == "kg/ha":
+                yield_kg_per_mu = yield_value / 15.0  # 1 ha ≈ 15 亩
+            elif yield_unit == "t/ha":
+                yield_kg_per_mu = (yield_value * 1000.0) / 15.0
+            else:
+                yield_kg_per_mu = yield_value
+
+            # 面积换算到 亩
+            area_mu = area_value * (15.0 if area_unit == "hectare(ha)" else 1.0)
+
+            total_production_kg = area_mu * yield_kg_per_mu
+            revenue = total_production_kg * price_value
+            profit = revenue - cost_value
+            st.success("Calculated")
+            st.write({
+                "Total production (kg)": round(total_production_kg, 2),
+                f"Revenue ({currency})": round(revenue, 2),
+                f"Profit ({currency})": round(profit, 2)
+            })
     
     # AI模型状态
     with st.expander("🔍 AI Model Status", expanded=False):
@@ -1724,8 +2037,8 @@ with st.sidebar:
         st.session_state.show_search = False
 
 # 主界面
-st.title("☁️ AI Cloud Storage System")
-st.markdown("Intelligent Cloud Storage - Supports Resume Upload, Online Preview, Local Caching")
+st.title("🌾 Agribusiness Expert AI Cloud")
+st.markdown("Built for agribusiness: document management + KPIs + climate/remote sensing insights")
 
 # 文件上传区域
 st.markdown("### 📤 File Upload")
@@ -1833,6 +2146,7 @@ if current_folder_id is not None:
                 st.rerun()
 
 # 检查显示模式
+files = []  # 确保后续使用时已定义
 if st.session_state.get('show_ai_analysis', False):
     st.markdown("### 🤖 AI Smart Analysis")
     
