@@ -2403,7 +2403,7 @@ if files:
                 
                 with col2:
                     # 缓存按钮
-                    if not file['is_cached']:
+                    if not file.get('is_cached', False):
                         if st.button("💾 Cache", key=f"cache_{file['id']}", help="Cache to local", width='stretch'):
                             if storage_manager.cache_file(file['id']):
                                 st.success("Cached successfully!")
