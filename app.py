@@ -2350,18 +2350,18 @@ if files:
             <div class="file-card">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; flex: 1;">
-                        <span class="file-icon">{storage_manager.get_file_icon(file['file_type'])}</span>
+                        <span class="file-icon">{storage_manager.get_file_icon(file.get('file_type', 'unknown'))}</span>
                         <div>
                             <h4 style="margin: 0; color: #1e293b;">{file['filename']}</h4>
                             <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">
-                                Type: {file['file_type']} | Uploaded: {file['upload_time']}
+                                Type: {file.get('file_type', 'unknown')} | Uploaded: {file.get('upload_time', '')}
                             </p>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        <span style="font-weight: 600; color: #475569;">{storage_manager.format_file_size(file['file_size'])}</span>
-                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: {'#dcfce7' if file['is_cached'] else '#dbeafe'}; color: {'#166534' if file['is_cached'] else '#1e40af'};">
-                            {'✅ Cached' if file['is_cached'] else '☁️ Cloud'}
+                        <span style="font-weight: 600; color: #475569;">{storage_manager.format_file_size(file.get('file_size', 0))}</span>
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: {'#dcfce7' if file.get('is_cached', False) else '#dbeafe'}; color: {'#166534' if file.get('is_cached', False) else '#1e40af'};">
+                            {'✅ Cached' if file.get('is_cached', False) else '☁️ Cloud'}
                         </span>
                     </div>
                 </div>
