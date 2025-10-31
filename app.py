@@ -2608,12 +2608,17 @@ if files:
                     st.markdown("**Document Summary**:")
                     st.info(ai_analysis['summary'])
                 
-                # 自动分类按钮
-                if st.button("📁 Auto Classify", key=f"auto_classify_{file['id']}", help="Move file to corresponding industry folder"):
+                # Auto classify button: only show error when user clicks and action fails
+                auto_clicked = st.button(
+                    "📁 Auto Classify",
+                    key=f"auto_classify_{file['id']}",
+                    help="Move file to corresponding industry folder"
+                )
+                if auto_clicked:
                     if storage_manager.move_file_to_industry_folder(file['id'], ai_analysis['industry_category']):
                         st.success(f"File moved to {ai_analysis['industry_category']} folder!")
                         st.rerun()
-                else:
+                    else:
                         st.error("Classification failed")
             
             # 智能报告显示
