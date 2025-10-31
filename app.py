@@ -321,7 +321,8 @@ class CloudStorageManager:
                 )
                 st.success("✅ BERT text classification model loaded successfully")
             except Exception as e:
-                st.warning(f"⚠️ BERT model loading failed: {str(e)}")
+                # Downgrade to info to avoid noisy toast; rules/ML will fallback
+                st.info(f"BERT model loading failed, fallback will be used")
         else:
             st.info("ℹ️ Transformers library not installed, using machine learning classification")
         
@@ -337,7 +338,7 @@ class CloudStorageManager:
                 )
                 st.success("✅ T5 summarization model loaded successfully")
             except Exception as e:
-                st.warning(f"⚠️ T5 model loading failed: {str(e)}")
+                st.info("T5 summarization not available, using smart rules")
         else:
             st.info("ℹ️ Using smart summarization algorithm")
         
@@ -355,9 +356,9 @@ class CloudStorageManager:
                 if self.init_pretrained_classifier():
                     st.success("✅ Pre-trained machine learning classifier loaded successfully")
                 else:
-                    st.warning("⚠️ Pre-trained classifier initialization failed, using keyword matching")
+                    st.info("Pre-trained ML classifier unavailable, using keyword matching")
             except Exception as e:
-                st.warning(f"⚠️ 机器学习分类器初始化失败: {str(e)}")
+                st.info("ML classifier init failed, using keyword matching")
         else:
             st.info("ℹ️ 使用关键词匹配分类")
         
