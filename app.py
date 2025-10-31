@@ -254,10 +254,20 @@ class CloudStorageManager:
                 key_phrases TEXT,
                 summary TEXT,
                 confidence_score REAL,
+                method TEXT,
                 analysis_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (file_id) REFERENCES files (id)
             )
         ''')
+
+        # 迁移：若旧表无 method 列则补充
+        try:
+            cursor.execute("PRAGMA table_info(ai_analysis)")
+            cols = [row[1] for row in cursor.fetchall()]
+            if 'method' not in cols:
+                cursor.execute('ALTER TABLE ai_analysis ADD COLUMN method TEXT')
+        except Exception:
+            pass
         
         # 行业分类表
         cursor.execute('''
@@ -1554,11 +1564,11 @@ class CloudStorageManager:
         cursor = conn.cursor()
         
         cursor.execute('''
-            INSERT INTO ai_analysis (file_id, analysis_type, industry_category, extracted_text, key_phrases, summary, confidence_score)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO ai_analysis (file_id, analysis_type, industry_category, extracted_text, key_phrases, summary, confidence_score, method)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (file_id, "full_analysis", classification["category"], 
               extracted_text[:1000], json.dumps(key_phrases, ensure_ascii=False), 
-              summary, classification["confidence"]))
+              summary, classification["confidence"], classification.get("method", "Unknown")))
         
         conn.commit()
         conn.close()
@@ -1576,14 +1586,14 @@ class CloudStorageManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT analysis_type, industry_category, extracted_text, key_phrases, summary, confidence_score, analysis_time
+            SELECT analysis_type, industry_category, extracted_text, key_phrases, summary, confidence_score, method, analysis_time
             FROM ai_analysis WHERE file_id = ? ORDER BY analysis_time DESC LIMIT 1
         ''', (file_id,))
         result = cursor.fetchone()
         conn.close()
         
         if result:
-            analysis_type, industry_category, extracted_text, key_phrases, summary, confidence_score, analysis_time = result
+            analysis_type, industry_category, extracted_text, key_phrases, summary, confidence_score, method, analysis_time = result
             return {
                 "analysis_type": analysis_type,
                 "industry_category": industry_category,
@@ -1591,6 +1601,7 @@ class CloudStorageManager:
                 "key_phrases": json.loads(key_phrases) if key_phrases else [],
                 "summary": summary,
                 "confidence_score": confidence_score,
+                "method": method or "Unknown",
                 "analysis_time": analysis_time
             }
         return None
