@@ -1974,7 +1974,7 @@ with st.sidebar:
             price_value = st.number_input("Price (per kg)", value=0.5, step=0.05)
             cost_value = st.number_input("Total cost", value=50000.0, step=1000.0)
 
-        if st.button("计算总产与利润", use_container_width=True):
+        if st.button("Calculate production & profit", use_container_width=True):
             # 单位换算到 公斤/亩
             if yield_unit == "jin/mu":
                 yield_kg_per_mu = yield_value * 0.5
