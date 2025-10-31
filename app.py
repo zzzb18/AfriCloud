@@ -1324,7 +1324,8 @@ class CloudStorageManager:
                         "method": "BERT"
                     }
             except Exception as e:
-                st.warning(f"BERT分类失败: {str(e)}")
+                # Suppress noisy toast; fallback methods will be tried below
+                pass
         
         # 方法2: 使用机器学习分类器（如果可用且已训练）
         if self.ml_classifier and self.ml_trained and len(text) > 20:
@@ -1344,7 +1345,8 @@ class CloudStorageManager:
                     "method": "ML"
                 }
             except Exception as e:
-                st.warning(f"机器学习分类失败: {str(e)}")
+                # Suppress noisy toast; fallback to rules
+                pass
         
         # 方法3: 智能关键词匹配（改进版）
         words = jieba.lcut(text)
