@@ -2357,7 +2357,7 @@ if files:
                     <div style="display: flex; align-items: center; flex: 1;">
                         <span class="file-icon">{storage_manager.get_file_icon(file.get('file_type', 'unknown'))}</span>
                         <div>
-                            <h4 style="margin: 0; color: #1e293b;">{file['filename']}</h4>
+                            <h4 style="margin: 0; color: #1e293b;">{file.get('filename', 'Unknown')}</h4>
                             <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">
                                 Type: {file.get('file_type', 'unknown')} | Uploaded: {file.get('upload_time', '')}
                             </p>
@@ -2425,8 +2425,8 @@ if files:
                             st.download_button(
                                 "📥 Download File",
                                 file_data,
-                                file['filename'],
-                                key=f"download_file_{file['id']}"
+                                file.get('filename', 'file'),
+                                key=f"download_file_{file.get('id', 'unknown')}"
                             )
                         else:
                             st.error("File not found")
@@ -2434,7 +2434,7 @@ if files:
                 # 文件操作菜单
                 with st.popover("⚙️ Actions", help="File operation menu"):
                     # 重命名
-                    new_name = st.text_input("Rename", value=file['filename'], key=f"rename_input_{file['id']}")
+                    new_name = st.text_input("Rename", value=file.get('filename', ''), key=f"rename_input_{file.get('id','unknown')}")
                     if st.button("✅ Confirm Rename", key=f"rename_confirm_{file['id']}"):
                         result = storage_manager.rename_file(file['id'], new_name)
                         if result["success"]:
@@ -2491,8 +2491,8 @@ if files:
                     file_data = storage_manager.preview_file(file['id'])
                     if file_data:
                         if file['file_type'] == 'image':
-                            st.image(file_data, caption=file['filename'], width='stretch')
-                        elif file['file_type'] == 'application' and file['filename'].endswith('.pdf'):
+                            st.image(file_data, caption=file.get('filename', ''), width='stretch')
+                        elif file['file_type'] == 'application' and str(file.get('filename','')).endswith('.pdf'):
                             if PDF_AVAILABLE:
                                 try:
                                     # 使用BytesIO包装数据
@@ -2506,7 +2506,7 @@ if files:
                                         mat = fitz.Matrix(1.5, 1.5)  # 1.5倍缩放
                                         pix = page.get_pixmap(matrix=mat)
                                         img_data = pix.tobytes("png")
-                                        st.image(img_data, caption=f"PDF Preview: {file['filename']} (Page 1)", width='stretch')
+                                        st.image(img_data, caption=f"PDF Preview: {file.get('filename','')} (Page 1)", width='stretch')
                                         
                                         # 显示页数信息
                                         if len(doc) > 1:
@@ -2521,8 +2521,8 @@ if files:
                                     st.download_button(
                                         "📥 Download PDF",
                                         file_data,
-                                        file['filename'],
-                                        key=f"preview_download_pdf_{file['id']}"
+                                        file.get('filename','file.pdf'),
+                                        key=f"preview_download_pdf_{file.get('id','unknown')}"
                                     )
                             else:
                                 st.info("PDF preview requires PyMuPDF module")
@@ -2530,10 +2530,10 @@ if files:
                                 st.download_button(
                                     "📥 Download PDF",
                                     file_data,
-                                    file['filename'],
-                                    key=f"preview_download_pdf_no_fitz_{file['id']}"
+                                    file.get('filename','file.pdf'),
+                                    key=f"preview_download_pdf_no_fitz_{file.get('id','unknown')}"
                                 )
-                        elif file['file_type'] == 'application' and file['filename'].endswith(('.xlsx', '.xls')):
+                        elif file['file_type'] == 'application' and str(file.get('filename','')).endswith(('.xlsx', '.xls')):
                             try:
                                 import pandas as pd
                                 import io
@@ -2543,10 +2543,10 @@ if files:
                                     # 安全地显示DataFrame，避免numpy.str_错误
                                     try:
                                         st.dataframe(df.head(10), width='stretch')
-                                        st.caption(f"Excel Preview: {file['filename']} (Showing first 10 rows)")
+                                        st.caption(f"Excel Preview: {file.get('filename','')} (Showing first 10 rows)")
                                     except Exception as display_error:
                                         # 如果dataframe显示失败，显示基本信息
-                                        st.write(f"Excel File: {file['filename']}")
+                                        st.write(f"Excel File: {file.get('filename','')}")
                                         st.write(f"Rows: {len(df)}, Columns: {len(df.columns)}")
                                         st.write("Column names:", list(df.columns))
                                 else:
@@ -2556,32 +2556,32 @@ if files:
                                 st.download_button(
                                     "📥 Download Excel",
                                     file_data,
-                                    file['filename'],
-                                    key=f"preview_download_excel_{file['id']}"
+                                    file.get('filename','file.xlsx'),
+                                    key=f"preview_download_excel_{file.get('id','unknown')}"
                                 )
-                        elif file['file_type'] == 'text' or file['filename'].endswith('.txt'):
+                        elif file['file_type'] == 'text' or str(file.get('filename','')).endswith('.txt'):
                             try:
                                 text_content = file_data.decode('utf-8')
-                                st.text_area("File Content", text_content[:1000], height=200, key=f"text_preview_{file['id']}")
+                                st.text_area("File Content", text_content[:1000], height=200, key=f"text_preview_{file.get('id','unknown')}")
                                 if len(text_content) > 1000:
-                                    st.caption(f"Text Preview: {file['filename']} (Showing first 1000 characters)")
+                                    st.caption(f"Text Preview: {file.get('filename','')} (Showing first 1000 characters)")
                                 else:
-                                    st.caption(f"Text Preview: {file['filename']}")
+                                    st.caption(f"Text Preview: {file.get('filename','')}")
                             except Exception as e:
                                 st.error(f"Text preview failed: {str(e)}")
                                 st.download_button(
                                     "📥 Download Text",
                                     file_data,
-                                    file['filename'],
-                                    key=f"preview_download_txt_{file['id']}"
+                                    file.get('filename','file.txt'),
+                                    key=f"preview_download_txt_{file.get('id','unknown')}"
                                 )
                         else:
                             st.info(f"Preview not supported for {file['file_type']} file type")
                             st.download_button(
                                 "📥 Download File",
                                 file_data,
-                                file['filename'],
-                                key=f"preview_download_other_{file['id']}"
+                                file.get('filename','file'),
+                                key=f"preview_download_other_{file.get('id','unknown')}"
                             )
                     else:
                         st.error("Unable to read file content")
