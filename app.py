@@ -66,100 +66,189 @@ st.set_page_config(
 # Clean and modern CSS styling
 st.markdown("""
 <style>
-    /* Overall Layout */
+    /* Overall Layout - Baidu Cloud Style */
     .main {
-        background: #f8fafc;
-        color: #1e293b;
+        background: #f5f5f5;
+        color: #333;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
     }
     
     /* Title Styles */
     h1, h2, h3, h4, h5, h6 {
-        color: #1e293b;
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-        font-weight: 600;
+        color: #333;
+        font-weight: 500;
         margin-bottom: 1rem;
     }
     
-    /* Button Styles */
+    /* Button Styles - Baidu Cloud Blue */
     .stButton>button {
-        background: #3b82f6;
+        background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
         color: white;
         border: none;
         padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 500;
+        border-radius: 6px;
+        font-weight: 400;
         font-size: 14px;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
     }
     
     .stButton>button:hover {
-        background: #2563eb;
+        background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
     }
     
-    /* File Card Styles */
+    /* File Card Styles - Baidu Cloud Card */
     .file-card {
         background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
         padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s ease;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
     
     .file-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        border-color: #1890ff;
     }
     
     /* Metric Card Styles */
     .metric-card {
         background: white;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e8e8e8;
         border-radius: 8px;
         padding: 16px;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     
     /* Sidebar Styles */
     .css-1d391kg {
         background: white;
-        border-right: 1px solid #e2e8f0;
+        border-right: 1px solid #e8e8e8;
     }
     
     /* Preview Section Styles */
     .preview-section {
         background: white;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e8e8e8;
         border-radius: 8px;
         padding: 16px;
         margin-top: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     
     /* File Icon Styles */
     .file-icon {
-        font-size: 24px;
+        font-size: 28px;
         margin-right: 12px;
+        width: 32px;
+        text-align: center;
     }
     
     /* Action Button Styles */
     .action-btn {
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
+        background: #fafafa;
+        border: 1px solid #d9d9d9;
+        color: #595959;
         padding: 6px 12px;
-        border-radius: 6px;
+        border-radius: 4px;
         font-size: 12px;
         margin: 0 2px;
+        transition: all 0.3s ease;
     }
     
     .action-btn:hover {
-        background: #e2e8f0;
-        color: #475569;
+        background: #f0f0f0;
+        border-color: #1890ff;
+        color: #1890ff;
+    }
+    
+    /* Status Tags */
+    .status-cached {
+        background: #f6ffed;
+        color: #52c41a;
+        border: 1px solid #b7eb8f;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-cloud {
+        background: #e6f7ff;
+        color: #1890ff;
+        border: 1px solid #91d5ff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    /* File Type Colors */
+    .file-type-image { color: #ff4d4f; }
+    .file-type-document { color: #1890ff; }
+    .file-type-video { color: #722ed1; }
+    .file-type-audio { color: #fa8c16; }
+    .file-type-text { color: #52c41a; }
+    
+    /* Grid Layout for Files */
+    .files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+    
+    /* File Card in Grid */
+    .file-grid-card {
+        background: white;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .file-grid-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        border-color: #1890ff;
+    }
+    
+    /* Action Menu */
+    .action-menu {
+        position: absolute;
+        background: white;
+        border: 1px solid #e8e8e8;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 8px 0;
+        z-index: 1000;
+        min-width: 160px;
+    }
+    
+    .action-menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    .action-menu-item:hover {
+        background: #f5f5f5;
+        color: #1890ff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -1011,16 +1100,39 @@ class CloudStorageManager:
         return f"{size_bytes:.1f}{size_names[i]}"
     
     def get_file_icon(self, file_type: str) -> str:
-        """获取文件类型图标"""
+        """获取文件类型图标 - 百度云盘风格"""
         icons = {
             'image': '🖼️',
             'application': '📄',
             'text': '📝',
             'video': '🎥',
             'audio': '🎵',
-            'unknown': '📁'
+            'unknown': '📁',
+            'pdf': '📕',
+            'excel': '📊',
+            'word': '📝',
+            'ppt': '📽️',
+            'zip': '📦',
+            'code': '💻'
         }
         return icons.get(file_type, '📁')
+    
+    def get_file_color_class(self, file_type: str) -> str:
+        """获取文件类型颜色类"""
+        color_map = {
+            'image': 'file-type-image',
+            'application': 'file-type-document',
+            'text': 'file-type-text',
+            'video': 'file-type-video',
+            'audio': 'file-type-audio',
+            'pdf': 'file-type-document',
+            'excel': 'file-type-document',
+            'word': 'file-type-document',
+            'ppt': 'file-type-document',
+            'zip': 'file-type-document',
+            'code': 'file-type-text'
+        }
+        return color_map.get(file_type, '')
     
     def upload_file_with_resume(self, uploaded_file, folder_id: Optional[int] = None, chunk_size: int = 1024*1024) -> Dict[str, Any]:
         """带断点续传的文件上传"""
@@ -1847,332 +1959,188 @@ if 'storage_manager' not in st.session_state:
 
 storage_manager = st.session_state.storage_manager
 
-# 侧边栏
+# Sidebar - Clean layout inspired by Baidu Cloud
 with st.sidebar:
-    st.markdown("### 🌾 Agribusiness Expert AI Cloud")
+    # Header
+    st.markdown("### 🌾 Agribusiness Cloud")
     st.markdown("---")
     
-    # 快速操作
-    st.markdown("### ⚡ Quick Actions")
+    # Main Navigation
+    st.markdown("**Main**")
+    nav_selected = st.radio(
+        "Navigation",
+        ["Home", "AI Analysis", "Tools", "Settings"],
+        label_visibility="collapsed",
+        key="main_nav"
+    )
     
-    # 文件夹管理
-    st.markdown("### 📁 Folder Management")
+    if nav_selected == "Home":
+        st.session_state.current_view = "home"
+    elif nav_selected == "AI Analysis":
+        st.session_state.current_view = "ai_analysis"
+    elif nav_selected == "Tools":
+        st.session_state.current_view = "tools"
+    else:
+        st.session_state.current_view = "settings"
     
-    # 创建文件夹
-    with st.form("create_folder_form"):
-        folder_name = st.text_input("📁 New Folder", placeholder="Enter folder name")
-        if st.form_submit_button("Create", width='stretch'):
+    st.markdown("---")
+    
+    # File Categories
+    st.markdown("**My Files**")
+    category_selected = st.radio(
+        "File Categories",
+        ["All Files", "Documents", "Images", "Spreadsheets", "PDFs", "Other"],
+        label_visibility="collapsed",
+        key="file_category"
+    )
+    
+    st.markdown("---")
+    
+    # Quick Access - Folders
+    st.markdown("**Quick Access**")
+    folders = storage_manager.get_folders()
+    if folders:
+        for folder in folders[:5]:  # Show top 5
+            if st.button(f"📁 {folder['folder_name']}", key=f"nav_folder_{folder['id']}", use_container_width=True):
+                st.session_state.current_folder_id = folder['id']
+                st.rerun()
+    
+    # Create new folder
+    with st.expander("➕ New Folder", expanded=False):
+        folder_name = st.text_input("Folder name", placeholder="Enter name", key="new_folder_input")
+        if st.button("Create", key="create_folder_btn", use_container_width=True):
             if folder_name:
                 result = storage_manager.create_folder(folder_name)
                 if result["success"]:
-                    st.success(f"✅ Folder '{folder_name}' created successfully!")
-                else:
-                    st.error(f"❌ Creation failed: {result['error']}")
-            else:
-                st.warning("Please enter folder name")
-    
-    # 文件夹列表
-    folders = storage_manager.get_folders()
-    if folders:
-        st.markdown("#### Existing Folders")
-        for folder in folders:
-            col1, col2, col3 = st.columns([3, 1, 1])
-            with col1:
-                st.write(f"📁 {folder['folder_name']}")
-                st.caption(f"Files: {folder['file_count']} | Created: {folder['created_time']}")
-            with col2:
-                # 重命名文件夹
-                with st.popover("✏️", help="Rename folder"):
-                    new_name = st.text_input("New Name", value=folder['folder_name'], key=f"folder_rename_{folder['id']}")
-                    if st.button("✅ Confirm", key=f"folder_rename_confirm_{folder['id']}"):
-                        result = storage_manager.rename_folder(folder['id'], new_name)
-                        if result["success"]:
-                            st.success("Rename successful!")
-                            st.rerun()
-                        else:
-                            st.error(f"Rename failed: {result['error']}")
-            with col3:
-                # 删除文件夹
-                if st.button("🗑️", key=f"folder_delete_{folder['id']}", help="Delete folder"):
-                    result = storage_manager.delete_folder(folder['id'])
-                    if result["success"]:
-                        st.success("Folder deleted!")
-                        st.rerun()
-                    else:
-                        st.error(f"Delete failed: {result['error']}")
-    
-    # 同步功能
-    st.markdown("---")
-    if st.button("🔄 Sync Cache", width='stretch', help="Sync all cached files"):
-        result = storage_manager.sync_cached_files()
-        if result["success"]:
-            st.success(result["message"])
-        else:
-            st.error(f"Sync failed: {result['error']}")
-    
-    st.markdown("---")
-    
-    # Agribusiness工具与AI功能区域
-    st.markdown("### 🌾 Agribusiness Tools & AI")
-    with st.expander("☁️ Weather & Climate (Open-Meteo)", expanded=False):
-        colw1, colw2 = st.columns(2)
-        with colw1:
-            lat = st.number_input("Latitude", value=0.0, step=0.1)
-        with colw2:
-            lon = st.number_input("Longitude", value=20.0, step=0.1)
-        if st.button("Fetch 7-Day Climate Summary", use_container_width=True):
-            with st.spinner("Fetching weather data..."):
-                res = storage_manager.fetch_weather_summary(lat, lon)
-                if res.get("success"):
-                    ws = res["weather"]["summary"]
-                    st.success("Weather updated")
-                    st.write({
-                        "7d total rainfall (mm)": ws.get("7d_total_rain_mm"),
-                        "Avg Tmax (°C)": ws.get("avg_tmax"),
-                        "Avg Tmin (°C)": ws.get("avg_tmin")
-                    })
-                else:
-                    st.error(f"Weather fetch failed: {res.get('error')}")
-
-    with st.expander("🛰️ Remote Sensing (NDVI/EVI)", expanded=False):
-        colr1, colr2, colr3 = st.columns(3)
-        with colr1:
-            rs_lat = st.number_input("Latitude", value=0.0, step=0.1, key="rs_lat")
-        with colr2:
-            rs_lon = st.number_input("Longitude", value=20.0, step=0.1, key="rs_lon")
-        with colr3:
-            rs_days = st.slider("Days", min_value=7, max_value=60, value=30, step=1, key="rs_days")
-        if st.button("Generate NDVI/EVI Timeseries", use_container_width=True):
-            with st.spinner("Generating NDVI/EVI (stub)..."):
-                res = storage_manager.compute_remote_sensing_stub(rs_lat, rs_lon, rs_days)
-                if res.get("success"):
-                    rs = res["remote_sensing"]
-                    st.success("Generated")
-                    if rs.get("dates") and rs.get("ndvi"):
-                        st.markdown("**NDVI**")
-                        ndvi_df = pd.DataFrame({"date": rs["dates"], "NDVI": rs["ndvi"]}).set_index("date")
-                        st.line_chart(ndvi_df)
-                    if rs.get("dates") and rs.get("evi"):
-                        st.markdown("**EVI**")
-                        evi_df = pd.DataFrame({"date": rs["dates"], "EVI": rs["evi"]}).set_index("date")
-                        st.line_chart(evi_df)
-                else:
-                    st.error(f"Remote sensing generation failed: {res.get('error')}")
-
-    with st.expander("🧮 Agri Quick Calculator", expanded=False):
-        st.caption("Quick estimation: total production & profit")
-        # 总产量 = 面积 × 单产（自动做少量单位适配）
-        colc1, colc2, colc3 = st.columns(3)
-        with colc1:
-            area_value = st.number_input("Area value", value=100.0, step=1.0)
-            area_unit = st.selectbox("Area unit", ["hectare(ha)", "mu"], index=0)
-        with colc2:
-            yield_value = st.number_input("Yield value", value=3.0, step=0.1)
-            yield_unit = st.selectbox("Yield unit", ["t/ha", "kg/ha", "kg/mu", "jin/mu"], index=0)
-        with colc3:
-            currency = st.selectbox("Currency", ["USD", "KES", "NGN", "ZAR", "GHS", "XOF", "XAF", "ETB", "TZS"], index=1)
-            price_value = st.number_input("Price (per kg)", value=0.5, step=0.05)
-            cost_value = st.number_input("Total cost", value=50000.0, step=1000.0)
-
-        if st.button("Calculate production & profit", use_container_width=True):
-            # 单位换算到 公斤/亩
-            if yield_unit == "jin/mu":
-                yield_kg_per_mu = yield_value * 0.5
-            elif yield_unit == "kg/ha":
-                yield_kg_per_mu = yield_value / 15.0  # 1 ha ≈ 15 亩
-            elif yield_unit == "t/ha":
-                yield_kg_per_mu = (yield_value * 1000.0) / 15.0
-            else:
-                yield_kg_per_mu = yield_value
-
-            # 面积换算到 亩
-            area_mu = area_value * (15.0 if area_unit == "hectare(ha)" else 1.0)
-
-            total_production_kg = area_mu * yield_kg_per_mu
-            revenue = total_production_kg * price_value
-            profit = revenue - cost_value
-            st.success("Calculated")
-            st.write({
-                "Total production (kg)": round(total_production_kg, 2),
-                f"Revenue ({currency})": round(revenue, 2),
-                f"Profit ({currency})": round(profit, 2)
-            })
-    
-    # AI模型状态
-    with st.expander("🔍 AI Model Status", expanded=False):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if OCR_AVAILABLE and storage_manager.ocr_reader is not None:
-                st.success("✅ OCR Text Recognition")
-            elif OCR_AVAILABLE:
-                st.warning("🔄 OCR model loading...")
-            else:
-                st.error("❌ OCR Text Recognition")
-            
-            if TRANSFORMERS_AVAILABLE:
-                st.success("✅ Deep Learning Model")
-            else:
-                st.error("❌ Deep Learning Model")
-        
-        with col2:
-            if ML_AVAILABLE:
-                st.success("✅ Machine Learning Classification")
-            else:
-                st.error("❌ Machine Learning Classification")
-            
-            if OPENAI_AVAILABLE:
-                st.success("✅ OpenAI Integration")
-            else:
-                st.warning("⚠️ OpenAI Integration")
-    
-    # AI分析按钮
-    if st.button("🧠 Smart Analysis", width='stretch', help="Perform AI analysis on all files"):
-        st.session_state.show_ai_analysis = True
-    else:
-        st.session_state.show_ai_analysis = False
-    
-    # 重新初始化AI模型
-    if st.button("🔄 Reload AI", width='stretch', help="Reinitialize AI models"):
-        with st.spinner("Reloading AI models..."):
-            storage_manager.init_ai_models()
-            st.success("✅ AI models reloaded successfully!")
-    
-    # 行业分类查看
-    if st.button("📊 Industry Classification", width='stretch', help="View files classified by industry"):
-        st.session_state.show_industry_view = True
-    else:
-        st.session_state.show_industry_view = False
-    
-    # 智能报告生成
-    if st.button("📈 Smart Report", width='stretch', help="Generate smart analysis reports and charts"):
-        st.session_state.show_smart_report = True
-    else:
-        st.session_state.show_smart_report = False
-    
-    st.markdown("---")
-    
-    # 搜索功能
-    st.markdown("### 🔍 Search Files")
-    search_query = st.text_input("Search File Name", placeholder="Enter keywords")
-    search_type = st.selectbox("File Type", ["All", "image", "application", "text", "video", "audio"])
-    
-    if st.button("🔍 Search", width='stretch') and search_query:
-        file_type = None if search_type == "All" else search_type
-        search_results = storage_manager.search_files(search_query, file_type)
-        st.session_state.search_results = search_results
-        st.session_state.show_search = True
-    else:
-        st.session_state.show_search = False
-
-# 主界面
-st.title("🌾 Agribusiness Expert AI Cloud")
-st.markdown("Built for agribusiness: document management + KPIs + climate/remote sensing insights")
-
-# 文件上传区域
-st.markdown("### 📤 File Upload")
-
-# 上传模式选择
-upload_mode = st.radio(
-    "Select Upload Mode",
-    ["Normal Upload", "Resume Upload"],
-    horizontal=True,
-    help="Resume upload supports continuing after network interruption"
-)
-
-# 选择上传文件夹
-folders = storage_manager.get_folders()
-folder_options = ["Root Directory"] + [f["folder_name"] for f in folders]
-selected_folder = st.selectbox("Select Upload Folder", folder_options, help="Choose the folder to upload files to")
-
-# 获取选中的文件夹ID
-target_folder_id = None
-if selected_folder != "Root Directory":
-    for folder in folders:
-        if folder["folder_name"] == selected_folder:
-            target_folder_id = folder["id"]
-            break
-
-uploaded_files = st.file_uploader(
-    "Choose Files to Upload", 
-    type=["xlsx", "xls", "csv", "pdf", "png", "jpg", "jpeg", "gif", "bmp", "txt", "doc", "docx"],
-    accept_multiple_files=True,
-    help="Supports Excel, PDF, Images, CSV and other formats"
-)
-
-if uploaded_files:
-    for uploaded_file in uploaded_files:
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            st.write(f"📄 {uploaded_file.name} ({storage_manager.format_file_size(len(uploaded_file.getbuffer()))})")
-        
-        with col2:
-            if upload_mode == "Normal Upload":
-                if st.button(f"📤 Upload", key=f"upload_{uploaded_file.name}"):
-                    with st.spinner(f"Uploading {uploaded_file.name}..."):
-                        result = storage_manager.upload_file(uploaded_file, target_folder_id)
-                        if result["success"]:
-                            folder_name = selected_folder if selected_folder != "Root Directory" else "Root Directory"
-                            st.success(f"✅ {uploaded_file.name} uploaded to {folder_name}!")
-                        else:
-                            st.error(f"❌ Upload failed: {result['error']}")
-            else:
-                if st.button(f"🔄 Resume Upload", key=f"resume_upload_{uploaded_file.name}"):
-                    with st.spinner(f"Resume uploading {uploaded_file.name}..."):
-                        result = storage_manager.upload_file_with_resume(uploaded_file, target_folder_id)
-                        if result["success"]:
-                            folder_name = selected_folder if selected_folder != "Root Directory" else "Root Directory"
-                            st.success(f"✅ {uploaded_file.name} resume uploaded to {folder_name}!")
-                        else:
-                            st.error(f"❌ Resume upload failed: {result['error']}")
-
-# 上传进度显示
-progress_list = storage_manager.get_upload_progress()
-if progress_list:
-    st.markdown("### 🔄 Upload Progress")
-    for progress in progress_list:
-        col1, col2, col3 = st.columns([2, 1, 1])
-        
-        with col1:
-            st.write(f"📄 {progress['filename']}")
-            st.progress(progress['progress'])
-            st.caption(f"{storage_manager.format_file_size(progress['uploaded_size'])} / {storage_manager.format_file_size(progress['total_size'])}")
-        
-        with col2:
-            if st.button("🔄 继续", key=f"resume_{progress['filename']}"):
-                result = storage_manager.resume_upload(progress['filename'])
-                if result["success"]:
-                    st.success("Continue uploading...")
-                else:
-                    st.error("Unable to continue upload")
-        
-        with col3:
-            if st.button("❌ 取消", key=f"cancel_{progress['filename']}"):
-                if storage_manager.cancel_upload(progress['filename']):
-                    st.success("Upload cancelled")
+                    st.success("Created!")
                     st.rerun()
                 else:
-                    st.error("Cancel failed")
+                    st.error(result.get('error', 'Failed'))
+    
+    st.markdown("---")
+    
+    # Storage Usage (bottom)
+    all_files = storage_manager.get_files()
+    total_size = sum(f.get('file_size', 0) for f in all_files)
+    total_size_gb = total_size / (1024**3)
+    st.markdown(f"**Storage:** {total_size_gb:.1f} GB used")
+    st.progress(min(total_size_gb / 100, 1.0))  # Assume 100GB limit for visual
+    
+    # Collapsible AI Tools Section
+    with st.expander("🤖 AI Tools", expanded=False):
+        if st.button("🧠 Smart Analysis", use_container_width=True):
+            st.session_state.show_ai_analysis = True
+            st.rerun()
+        if st.button("📊 Industry View", use_container_width=True):
+            st.session_state.show_industry_view = True
+            st.rerun()
+    
+    # Collapsible Calculator
+    with st.expander("🧮 Calculator", expanded=False):
+        colc1, colc2 = st.columns(2)
+        with colc1:
+            area_value = st.number_input("Area", value=100.0, step=1.0, key="calc_area")
+            area_unit = st.selectbox("Unit", ["ha", "mu"], key="calc_area_unit")
+        with colc2:
+            yield_value = st.number_input("Yield", value=3.0, step=0.1, key="calc_yield")
+            yield_unit = st.selectbox("Yield Unit", ["t/ha", "kg/ha"], key="calc_yield_unit")
+        price = st.number_input("Price (per kg)", value=0.5, step=0.05, key="calc_price")
+        cost = st.number_input("Total Cost", value=50000.0, step=1000.0, key="calc_cost")
+        
+        if st.button("Calculate", use_container_width=True):
+            # Convert to kg/mu
+            if yield_unit == "t/ha":
+                yield_kg_per_mu = (yield_value * 1000.0) / 15.0
+            else:
+                yield_kg_per_mu = yield_value / 15.0
+            area_mu = area_value * (15.0 if area_unit == "ha" else 1.0)
+            total_kg = area_mu * yield_kg_per_mu
+            revenue = total_kg * price
+            profit = revenue - cost
+            st.write({
+                "Production (kg)": round(total_kg, 2),
+                "Revenue": round(revenue, 2),
+                "Profit": round(profit, 2)
+            })
 
-# 文件夹导航
+# Main Content Area - Clean layout inspired by Baidu Cloud
+current_view = st.session_state.get('current_view', 'home')
+
+# Top Action Bar
+col_action1, col_action2, col_action3, col_action4 = st.columns([1, 1, 1, 3])
+
+with col_action1:
+    if st.button("📤 Upload", use_container_width=True, type="primary"):
+        st.session_state.show_upload = True
+    else:
+        st.session_state.show_upload = False
+
+with col_action2:
+    folder_name_new = st.text_input("New folder", placeholder="Folder name", label_visibility="collapsed", key="top_new_folder")
+    if folder_name_new:
+        if st.button("Create", key="top_create_btn"):
+            result = storage_manager.create_folder(folder_name_new)
+            if result["success"]:
+                st.success("Created!")
+                st.rerun()
+
+with col_action3:
+    st.button("🔄 Sync", use_container_width=True)
+
+with col_action4:
+    search_query_top = st.text_input("Search", placeholder="Search files...", label_visibility="collapsed", key="top_search")
+    if search_query_top:
+        search_results_top = storage_manager.search_files(search_query_top, None)
+        if search_results_top:
+            st.session_state.search_results = search_results_top
+            st.session_state.show_search = True
+        else:
+            st.session_state.show_search = False
+
+st.markdown("---")
+
+# Current folder breadcrumb
 current_folder_id = st.session_state.get('current_folder_id', None)
 if current_folder_id is not None:
-    # 显示当前文件夹信息
     conn = sqlite3.connect(storage_manager.db_path)
     cursor = conn.cursor()
     cursor.execute('SELECT folder_name FROM folders WHERE id = ?', (current_folder_id,))
     folder_name = cursor.fetchone()
     conn.close()
-    
     if folder_name:
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.markdown(f"### 📁 Current Folder: {folder_name[0]}")
-        with col2:
-            if st.button("⬅️ Back to Root", width='stretch'):
+        col_bread1, col_bread2 = st.columns([10, 1])
+        with col_bread1:
+            st.markdown(f"📁 **{folder_name[0]}**")
+        with col_bread2:
+            if st.button("⬅️ Back", use_container_width=True):
                 st.session_state.current_folder_id = None
                 st.rerun()
+        st.markdown("---")
+
+# Upload area (collapsible)
+if st.session_state.get('show_upload', False):
+    with st.expander("📤 Upload Files", expanded=True):
+        uploaded_files = st.file_uploader(
+            "Choose files", 
+            type=["xlsx", "xls", "csv", "pdf", "png", "jpg", "jpeg", "gif", "bmp", "txt", "doc", "docx"],
+            accept_multiple_files=True
+        )
+        if uploaded_files:
+            for uploaded_file in uploaded_files:
+                col_up1, col_up2 = st.columns([4, 1])
+                with col_up1:
+                    st.write(f"📄 {uploaded_file.name} ({storage_manager.format_file_size(len(uploaded_file.getbuffer()))})")
+                with col_up2:
+                    if st.button("Upload", key=f"upload_{uploaded_file.name}", use_container_width=True):
+                        result = storage_manager.upload_file(uploaded_file, current_folder_id)
+                        if result["success"]:
+                            st.success("✅ Uploaded!")
+                            st.rerun()
+                        else:
+                            st.error(f"Failed: {result.get('error')}")
+
+# File List - Table View (Baidu Cloud style)
+st.markdown("### All Files")
 
 # 检查显示模式
 files = []  # 确保后续使用时已定义
@@ -2293,417 +2261,234 @@ elif st.session_state.get('show_industry_view', False):
     else:
         st.info("No files have been analyzed by AI yet")
 
-# 文件列表显示
-elif st.session_state.get('show_search', False) and 'search_results' in st.session_state:
-    st.markdown("### 🔍 Search Results")
+# File List Display - Baidu Cloud Style
+if st.session_state.get('show_search', False) and 'search_results' in st.session_state:
     files = st.session_state.search_results
-    st.info(f"🔍 Search Results: Found {len(files)} files")
+    st.info(f"🔍 Found {len(files)} files")
 else:
-    st.markdown("### 📁 File List")
     files = storage_manager.get_files(current_folder_id)
     
-    # 显示子文件夹
+    # Show subfolders first
     if current_folder_id is None:
         subfolders = storage_manager.get_folders()
     else:
         subfolders = storage_manager.get_folders(current_folder_id)
-    
+
+# Prepare table data
+if subfolders or files:
+    # Folders section - Baidu Cloud style
     if subfolders:
-        st.markdown("#### 📁 Folders")
-        for folder in subfolders:
-            col1, col2, col3 = st.columns([3, 1, 1])
-            with col1:
-                if st.button(f"📁 {folder['folder_name']} ({folder['file_count']} files)", key=f"enter_folder_{folder['id']}", width='stretch'):
+        st.markdown("### 📁 文件夹")
+        cols = st.columns(4)  # 4 columns for folder grid
+        for idx, folder in enumerate(subfolders):
+            with cols[idx % 4]:
+                if st.button(f"📁 {folder['folder_name']}", key=f"folder_{folder['id']}", use_container_width=True):
                     st.session_state.current_folder_id = folder['id']
                     st.rerun()
-            with col2:
-                if st.button("✏️", key=f"rename_folder_ui_{folder['id']}", help="Rename"):
-                    st.session_state[f"rename_folder_{folder['id']}"] = True
-            with col3:
-                if st.button("🗑️", key=f"delete_folder_ui_{folder['id']}", help="Delete"):
-                    result = storage_manager.delete_folder(folder['id'])
-                    if result["success"]:
-                        st.success("Folder deleted!")
-                        st.rerun()
-                    else:
-                        st.error(f"Delete failed: {result['error']}")
-        
-        st.markdown("---")
-
-if files:
-    # 文件统计
-    total_size = sum(file.get('file_size', 0) for file in files)
-    cached_count = sum(1 for file in files if file.get('is_cached', False))
-    
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Total Files", len(files))
-    with col2:
-        st.metric("Total Size", storage_manager.format_file_size(total_size))
-    with col3:
-        st.metric("Cached", f"{cached_count}/{len(files)}")
-    with col4:
-        st.metric("Cache Rate", f"{cached_count/len(files)*100:.1f}%")
     
     st.markdown("---")
     
-    # 文件列表 - 使用卡片式布局
-    for file in files:
-        with st.container():
-            # 文件卡片
-            st.markdown(f"""
-            <div class="file-card">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; flex: 1;">
-                        <span class="file-icon">{storage_manager.get_file_icon(file.get('file_type', 'unknown'))}</span>
-                        <div>
-                            <h4 style="margin: 0; color: #1e293b;">{file.get('filename', 'Unknown')}</h4>
-                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">
-                                Type: {file.get('file_type', 'unknown')} | Uploaded: {file.get('upload_time', '')}
-                            </p>
+    # Files section - Baidu Cloud card layout
+    if files:
+        st.markdown("### 📄 文件列表")
+        
+        # View mode toggle
+        view_mode = st.radio("视图模式", ["卡片视图", "列表视图"], horizontal=True, key="view_mode")
+        
+        if view_mode == "卡片视图":
+            # Grid layout for cards
+            cols = st.columns(4)
+            for idx, file in enumerate(files):
+                with cols[idx % 4]:
+                    with st.container():
+                        # File card
+                        file_icon = storage_manager.get_file_icon(file.get('file_type', 'unknown'))
+                        color_class = storage_manager.get_file_color_class(file.get('file_type', 'unknown'))
+                        
+                        st.markdown(f"""
+                        <div class="file-grid-card" style="position: relative;">
+                            <div style="text-align: center; margin-bottom: 12px;">
+                                <div class="{color_class}" style="font-size: 48px; margin-bottom: 8px;">{file_icon}</div>
+                                <div style="font-weight: 500; color: #333; margin-bottom: 4px; font-size: 14px; line-height: 1.4; height: 40px; overflow: hidden; text-overflow: ellipsis;">
+                                    {file.get('filename', 'Unknown')}
+                                </div>
+                                <div style="color: #999; font-size: 12px; margin-bottom: 8px;">
+                                    {storage_manager.format_file_size(file.get('file_size', 0))}
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span class="{'status-cached' if file.get('is_cached', False) else 'status-cloud'}">
+                                        {'已缓存' if file.get('is_cached', False) else '云端'}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <span style="font-weight: 600; color: #475569;">{storage_manager.format_file_size(file.get('file_size', 0))}</span>
-                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; background: {'#dcfce7' if file.get('is_cached', False) else '#dbeafe'}; color: {'#166534' if file.get('is_cached', False) else '#1e40af'};">
-                            {'✅ Cached' if file.get('is_cached', False) else '☁️ Cloud'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # 使用两列布局：左侧操作按钮，右侧预览内容
-            col_left, col_right = st.columns([1, 1])
-            
-            with col_left:
-                # 预览控制
-                show_preview = st.checkbox("👁️ Preview File", key=f"preview_{file['id']}", help="Click to preview file content")
-                
-                # 操作按钮行
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    # AI分析按钮
-                    if st.button("🧠 AI Analysis", key=f"ai_analyze_{file['id']}", help="Use AI to analyze file content", width='stretch'):
-                        with st.spinner("AI is analyzing file..."):
-                            result = storage_manager.analyze_file_with_ai(file['id'])
-                            if result["success"]:
-                                st.success("AI analysis completed!")
-                                st.rerun()
-                            else:
-                                st.error(f"AI analysis failed: {result['error']}")
-                    
-                    # 智能报告按钮
-                    if st.button("📈 Smart Report", key=f"smart_report_{file['id']}", help="Generate smart analysis report and charts", width='stretch'):
-                        with st.spinner("Generating smart report..."):
-                            result = storage_manager.generate_smart_report(file['id'])
-                            if result["success"]:
-                                st.session_state[f"show_report_{file['id']}"] = True
-                                st.session_state[f"report_data_{file['id']}"] = result
-                                st.success("Smart report generated successfully!")
-                                st.rerun()
-                            else:
-                                st.error(f"Report generation failed: {result['error']}")
-                
-                with col2:
-                    # 缓存按钮
-                    if not file.get('is_cached', False):
-                        if st.button("💾 Cache", key=f"cache_{file['id']}", help="Cache to local", width='stretch'):
-                            if storage_manager.cache_file(file['id']):
-                                st.success("Cached successfully!")
-                                st.rerun()
-                            else:
-                                st.error("Cache failed")
-                    else:
-                        st.success("Cached")
-                    
-                    # 下载按钮
-                    if st.button("📥 Download", key=f"download_btn_{file['id']}", help="Download file", width='stretch'):
-                        file_data = storage_manager.preview_file(file['id'])
-                        if file_data:
-                            st.download_button(
-                                "📥 Download File",
-                                file_data,
-                                file.get('filename', 'file'),
-                                key=f"download_file_{file.get('id', 'unknown')}"
-                            )
-                        else:
-                            st.error("File not found")
-                
-                # 文件操作菜单
-                with st.popover("⚙️ Actions", help="File operation menu"):
-                    # 重命名
-                    new_name = st.text_input("Rename", value=file.get('filename', ''), key=f"rename_input_{file.get('id','unknown')}")
-                    if st.button("✅ Confirm Rename", key=f"rename_confirm_{file['id']}"):
-                        result = storage_manager.rename_file(file['id'], new_name)
-                        if result["success"]:
-                            st.success("Rename successful!")
-                            st.rerun()
-                        else:
-                            st.error(f"Rename failed: {result['error']}")
-                    
-                    st.markdown("---")
-                    
-                    # 移动文件
-                    st.markdown("**Move to Folder:**")
-                    move_folders = storage_manager.get_folders()
-                    move_options = ["Root Directory"] + [f["folder_name"] for f in move_folders]
-                    target_move_folder = st.selectbox("Select Target Folder", move_options, key=f"move_folder_{file['id']}")
-                    
-                    if st.button("📁 Move File", key=f"move_file_{file['id']}"):
-                        target_move_folder_id = None
-                        if target_move_folder != "Root Directory":
-                            for folder in move_folders:
-                                if folder["folder_name"] == target_move_folder:
-                                    target_move_folder_id = folder["id"]
-                                    break
+                        """, unsafe_allow_html=True)
                         
-                        conn = sqlite3.connect(storage_manager.db_path)
-                        cursor = conn.cursor()
-                        cursor.execute('UPDATE files SET folder_id = ? WHERE id = ?', (target_move_folder_id, file['id']))
-                        conn.commit()
-                        conn.close()
+                        # Action buttons
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button("预览", key=f"preview_card_{file['id']}", use_container_width=True):
+                                st.session_state[f"show_preview_{file['id']}"] = True
+                        with col2:
+                            with st.popover("更多", use_container_width=True):
+                                if st.button("AI分析", key=f"ai_card_{file['id']}"):
+                                    with st.spinner("AI分析中..."):
+                                        result = storage_manager.analyze_file_with_ai(file['id'])
+                                        if result["success"]:
+                                            st.success("分析完成!")
+                                            st.rerun()
+                                
+                                if st.button("下载", key=f"download_card_{file['id']}"):
+                                    file_data = storage_manager.preview_file(file['id'])
+                                    if file_data:
+                                        st.download_button(
+                                            "下载文件",
+                                            file_data,
+                                            file.get('filename', 'file'),
+                                            key=f"dl_card_{file['id']}"
+                                        )
+                                
+                                if not file.get('is_cached', False):
+                                    if st.button("缓存", key=f"cache_card_{file['id']}"):
+                                        if storage_manager.cache_file(file['id']):
+                                            st.success("缓存成功!")
+                                            st.rerun()
+                                        else:
+                                            st.error("缓存失败")
+                                else:
+                                    st.success("已缓存")
+                                
+                                if st.button("删除", key=f"delete_card_{file['id']}"):
+                                    result = storage_manager.delete_file(file['id'])
+                                    if result["success"]:
+                                        st.success("删除成功!")
+                                        st.rerun()
                         
-                        st.success(f"File moved to {target_move_folder}!")
-                        st.rerun()
-                    
-                    st.markdown("---")
-                    
-                    # 删除
-                    if st.button("🗑️ Delete File", key=f"delete_{file['id']}", help="Permanently delete file"):
-                        if st.session_state.get(f"confirm_delete_{file['id']}", False):
-                            result = storage_manager.delete_file(file['id'])
-                            if result["success"]:
-                                st.success("File deleted!")
-                                st.rerun()
-                            else:
-                                st.error(f"Delete failed: {result['error']}")
-                        else:
-                            st.session_state[f"confirm_delete_{file['id']}"] = True
-                            st.warning("⚠️ Click again to confirm deletion")
-            
-            with col_right:
-                # 预览内容区域 - 放在右侧列
-                if show_preview:
-                    st.markdown("#### 📄 File Preview")
-                    
-                    file_data = storage_manager.preview_file(file['id'])
-                    if file_data:
-                        if file['file_type'] == 'image':
-                            st.image(file_data, caption=file.get('filename', ''), width='stretch')
-                        elif file['file_type'] == 'application' and str(file.get('filename','')).endswith('.pdf'):
-                            if PDF_AVAILABLE:
-                                try:
-                                    # 使用BytesIO包装数据
-                                    import io
-                                    pdf_stream = io.BytesIO(file_data)
-                                    doc = fitz.open(stream=pdf_stream, filetype="pdf")
-                                    
-                                    if len(doc) > 0:
-                                        page = doc[0]
-                                        # 设置合适的缩放比例
-                                        mat = fitz.Matrix(1.5, 1.5)  # 1.5倍缩放
-                                        pix = page.get_pixmap(matrix=mat)
-                                        img_data = pix.tobytes("png")
-                                        st.image(img_data, caption=f"PDF Preview: {file.get('filename','')} (Page 1)", width='stretch')
-                                        
-                                        # 显示页数信息
-                                        if len(doc) > 1:
-                                            st.caption(f"PDF has {len(doc)} pages, showing page 1")
+                        # Show preview if requested
+                        if st.session_state.get(f"show_preview_{file['id']}", False):
+                            with st.expander("文件预览", expanded=True):
+                                file_preview_data = storage_manager.preview_file(file['id'])
+                                if file_preview_data:
+                                    if file.get('file_type') == 'image':
+                                        st.image(file_preview_data, caption=file.get('filename'))
+                                    elif file.get('file_type') == 'application' and str(file.get('filename','')).endswith('.pdf'):
+                                        if PDF_AVAILABLE:
+                                            try:
+                                                import io
+                                                pdf_stream = io.BytesIO(file_preview_data)
+                                                doc = fitz.open(stream=pdf_stream, filetype="pdf")
+                                                if len(doc) > 0:
+                                                    page = doc.load_page(0)
+                                                    pix = page.get_pixmap()
+                                                    img_data = pix.tobytes("png")
+                                                    st.image(img_data, caption=file.get('filename'))
+                                                doc.close()
+                                            except Exception as e:
+                                                st.error(f"PDF预览失败: {str(e)}")
+                                                st.download_button("下载文件", file_preview_data, file.get('filename'))
+                                        else:
+                                            st.info("PDF预览功能需要PyMuPDF库")
+                                            st.download_button("下载文件", file_preview_data, file.get('filename'))
                                     else:
-                                        st.warning("PDF file is empty or cannot be read")
-                                    
-                                    doc.close()
-                                except Exception as e:
-                                    st.error(f"PDF preview failed: {str(e)}")
-                                    st.info("Try downloading the file to view content")
-                                    st.download_button(
-                                        "📥 Download PDF",
-                                        file_data,
-                                        file.get('filename','file.pdf'),
-                                        key=f"preview_download_pdf_{file.get('id','unknown')}"
-                                    )
+                                        st.info("该文件类型暂不支持预览")
+                                        st.download_button("下载文件", file_preview_data, file.get('filename'))
+                                else:
+                                    st.error("无法预览此文件")
+        else:
+            # List view - more compact
+            for file in files:
+                with st.container():
+                    # File card in list format
+                    file_icon = storage_manager.get_file_icon(file.get('file_type', 'unknown'))
+                    color_class = storage_manager.get_file_color_class(file.get('file_type', 'unknown'))
+                    
+                    col1, col2, col3, col4 = st.columns([1, 4, 2, 3])
+                    
+                    with col1:
+                        st.markdown(f"<div class='{color_class}' style='font-size: 24px;'>{file_icon}</div>", unsafe_allow_html=True)
+                    
+                    with col2:
+                        st.markdown(f"**{file.get('filename', 'Unknown')}**")
+                        st.caption(f"类型: {file.get('file_type', 'unknown')} | 上传时间: {file.get('upload_time', '')}")
+                    
+                    with col3:
+                        st.markdown(f"**{storage_manager.format_file_size(file.get('file_size', 0))}**")
+                        st.markdown(f"<span class='{'status-cached' if file.get('is_cached', False) else 'status-cloud'}'>{'已缓存' if file.get('is_cached', False) else '云端'}</span>", unsafe_allow_html=True)
+                    
+                    with col4:
+                        # Action buttons
+                        col_a1, col_a2, col_a3 = st.columns(3)
+                        with col_a1:
+                            if st.button("👁️", key=f"preview_list_{file['id']}", help="预览文件"):
+                                st.session_state[f"show_preview_{file['id']}"] = True
+                        with col_a2:
+                            with st.popover("⚙️"):
+                                if st.button("AI分析", key=f"ai_list_{file['id']}"):
+                                    with st.spinner("AI分析中..."):
+                                        result = storage_manager.analyze_file_with_ai(file['id'])
+                                        if result["success"]:
+                                            st.success("分析完成!")
+                                            st.rerun()
+                                
+                                if st.button("下载", key=f"download_list_{file['id']}"):
+                                    file_data = storage_manager.preview_file(file['id'])
+                                    if file_data:
+                                        st.download_button(
+                                            "下载文件",
+                                            file_data,
+                                            file.get('filename', 'file'),
+                                            key=f"dl_list_{file['id']}"
+                                        )
+                                
+                                if not file.get('is_cached', False):
+                                    if st.button("缓存", key=f"cache_list_{file['id']}"):
+                                        if storage_manager.cache_file(file['id']):
+                                            st.success("缓存成功!")
+                                            st.rerun()
+                                        else:
+                                            st.error("缓存失败")
+                                
+                                if st.button("删除", key=f"delete_list_{file['id']}"):
+                                    result = storage_manager.delete_file(file['id'])
+                                    if result["success"]:
+                                        st.success("删除成功!")
+                                        st.rerun()
+                        with col_a3:
+                            st.button("📈", key=f"report_list_{file['id']}", help="智能报告")
+                    
+                    # Show preview if requested
+                    if st.session_state.get(f"show_preview_{file['id']}", False):
+                        with st.expander("文件预览", expanded=True):
+                            file_preview_data = storage_manager.preview_file(file['id'])
+                            if file_preview_data:
+                                if file.get('file_type') == 'image':
+                                    st.image(file_preview_data, caption=file.get('filename'))
+                                elif file.get('file_type') == 'application' and str(file.get('filename','')).endswith('.pdf'):
+                                    if PDF_AVAILABLE:
+                                        try:
+                                            import io
+                                            pdf_stream = io.BytesIO(file_preview_data)
+                                            doc = fitz.open(stream=pdf_stream, filetype="pdf")
+                                            if len(doc) > 0:
+                                                page = doc.load_page(0)
+                                                pix = page.get_pixmap()
+                                                img_data = pix.tobytes("png")
+                                                st.image(img_data, caption=file.get('filename'))
+                                            doc.close()
+                                        except Exception as e:
+                                            st.error(f"PDF预览失败: {str(e)}")
+                                            st.download_button("下载文件", file_preview_data, file.get('filename'))
+                                    else:
+                                        st.info("PDF预览功能需要PyMuPDF库")
+                                        st.download_button("下载文件", file_preview_data, file.get('filename'))
+                                else:
+                                    st.info("该文件类型暂不支持预览")
+                                    st.download_button("下载文件", file_preview_data, file.get('filename'))
                             else:
-                                st.info("PDF preview requires PyMuPDF module")
-                                st.info("Please run: pip install PyMuPDF")
-                                st.download_button(
-                                    "📥 Download PDF",
-                                    file_data,
-                                    file.get('filename','file.pdf'),
-                                    key=f"preview_download_pdf_no_fitz_{file.get('id','unknown')}"
-                                )
-                        elif file['file_type'] == 'application' and str(file.get('filename','')).endswith(('.xlsx', '.xls')):
-                            try:
-                                import pandas as pd
-                                import io
-                                df = pd.read_excel(io.BytesIO(file_data))
-                                # 确保DataFrame不为空
-                                if not df.empty:
-                                    # 安全地显示DataFrame，避免numpy.str_错误
-                                    try:
-                                        st.dataframe(df.head(10), width='stretch')
-                                        st.caption(f"Excel Preview: {file.get('filename','')} (Showing first 10 rows)")
-                                    except Exception as display_error:
-                                        # 如果dataframe显示失败，显示基本信息
-                                        st.write(f"Excel File: {file.get('filename','')}")
-                                        st.write(f"Rows: {len(df)}, Columns: {len(df.columns)}")
-                                        st.write("Column names:", list(df.columns))
-                                else:
-                                    st.warning("Excel file is empty")
-                            except Exception as e:
-                                st.error(f"Excel preview failed: {str(e)}")
-                                st.download_button(
-                                    "📥 Download Excel",
-                                    file_data,
-                                    file.get('filename','file.xlsx'),
-                                    key=f"preview_download_excel_{file.get('id','unknown')}"
-                                )
-                        elif file['file_type'] == 'text' or str(file.get('filename','')).endswith('.txt'):
-                            try:
-                                text_content = file_data.decode('utf-8')
-                                st.text_area("File Content", text_content[:1000], height=200, key=f"text_preview_{file.get('id','unknown')}")
-                                if len(text_content) > 1000:
-                                    st.caption(f"Text Preview: {file.get('filename','')} (Showing first 1000 characters)")
-                                else:
-                                    st.caption(f"Text Preview: {file.get('filename','')}")
-                            except Exception as e:
-                                st.error(f"Text preview failed: {str(e)}")
-                                st.download_button(
-                                    "📥 Download Text",
-                                    file_data,
-                                    file.get('filename','file.txt'),
-                                    key=f"preview_download_txt_{file.get('id','unknown')}"
-                                )
-                        else:
-                            st.info(f"Preview not supported for {file['file_type']} file type")
-                            st.download_button(
-                                "📥 Download File",
-                                file_data,
-                                file.get('filename','file'),
-                                key=f"preview_download_other_{file.get('id','unknown')}"
-                            )
-                    else:
-                        st.error("Unable to read file content")
-            
-            # AI分析结果显示
-            ai_analysis = storage_manager.get_ai_analysis(file['id'])
-            if ai_analysis:
+                                st.error("无法预览此文件")
+                
                 st.markdown("---")
-                st.markdown("#### 🤖 AI Analysis Results")
-                
-                col1, col2 = st.columns([1, 1])
-                
-                with col1:
-                    st.markdown(f"**Industry Category**: {ai_analysis['industry_category']}")
-                    st.markdown(f"**Confidence**: {ai_analysis['confidence_score']:.2%}")
-                    st.markdown(f"**Analysis Method**: {ai_analysis.get('method', 'Unknown')}")
-                    st.markdown(f"**Analysis Time**: {ai_analysis['analysis_time']}")
-                
-                with col2:
-                    if ai_analysis['key_phrases']:
-                        st.markdown("**Key Phrases**:")
-                        for phrase in ai_analysis['key_phrases'][:5]:
-                            st.markdown(f"• {phrase}")
-                
-                if ai_analysis['summary']:
-                    st.markdown("**Document Summary**:")
-                    st.info(ai_analysis['summary'])
-                
-                # Auto classify button: only show error when user clicks and action fails
-                auto_clicked = st.button(
-                    "📁 Auto Classify",
-                    key=f"auto_classify_{file['id']}",
-                    help="Move file to corresponding industry folder"
-                )
-                if auto_clicked:
-                    if storage_manager.move_file_to_industry_folder(file['id'], ai_analysis['industry_category']):
-                        st.success(f"File moved to {ai_analysis['industry_category']} folder!")
-                        st.rerun()
-                    else:
-                        st.error("Classification failed")
-            
-            # 智能报告显示
-            if st.session_state.get(f"show_report_{file['id']}", False):
-                report_data = st.session_state.get(f"report_data_{file['id']}")
-                if report_data and report_data["success"]:
-                    st.markdown("---")
-                    st.markdown("#### 📈 Smart Analysis Report")
-                    
-                    # 显示报告内容
-                    st.markdown(report_data["report"])
-                    
-                    # 显示图表
-                    if report_data["charts"]:
-                        st.markdown("#### 📊 Data Visualization Charts")
-                        
-                        for chart in report_data["charts"]:
-                            st.markdown(f"**{chart['title']}**")
-                            
-                            if chart['type'] == 'bar':
-                                # 柱状图
-                                chart_data = pd.DataFrame({
-                                    'Category': chart['data']['labels'],
-                                    'Value': chart['data']['values']
-                                })
-                                st.bar_chart(chart_data.set_index('Category'))
-                            
-                            elif chart['type'] == 'pie':
-                                # 饼图
-                                pie_data = pd.DataFrame({
-                                    'Category': chart['data']['labels'],
-                                    'Value': chart['data']['values'],
-                                    'Percentage': chart['data']['percentages']
-                                })
-                                st.dataframe(pie_data)
-                            
-                            elif chart['type'] == 'line':
-                                # 折线图
-                                line_data = pd.DataFrame({
-                                    'Category': chart['data']['labels'],
-                                    'Value': chart['data']['values']
-                                })
-                                st.line_chart(line_data.set_index('Category'))
-                            
-                            st.markdown("---")
-                    
-                    # 关闭报告按钮
-                    if st.button("❌ Close Report", key=f"close_report_{file['id']}"):
-                        st.session_state[f"show_report_{file['id']}"] = False
-                        st.rerun()
-            
 
-else:
-    # 空状态
-    st.markdown("<div style='text-align: center; padding: 40px 0;'>", unsafe_allow_html=True)
-    st.header("📁 No Files")
-    st.subheader("Upload your first file to start using cloud storage")
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # 功能说明
-    features = st.columns(3)
-    with features[0]:
-        st.info("""
-        **📤 File Upload**
-        - Multiple formats support
-        - Resume upload
-        - Auto validation
-        """)
-    with features[1]:
-        st.success("""
-        **👁️ Online Preview**
-        - Instant image preview
-        - PDF document viewing
-        - No download needed
-        """)
-    with features[2]:
-        st.warning("""
-        **💾 Local Cache**
-        - Offline access
-        - Auto sync
-        - Smart management
-        """)
-
-# 页脚
+# Footer
 st.markdown("---")
 st.markdown("**Built with ❤️ • AI Cloud Storage System • ☁️ Intelligent Storage**")

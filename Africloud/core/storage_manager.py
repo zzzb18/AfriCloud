@@ -78,7 +78,8 @@ class CloudStorageManager:
         self.cache_dir.mkdir(exist_ok=True)
         self.ai_analysis_dir.mkdir(exist_ok=True)
 
-        self.db_path = self.storage_dir / "storage.db"
+        # 将路径转换为字符串，确保在Windows上正常工作
+        self.db_path = str(self.storage_dir / "storage.db")
         self.init_database()
 
         # 初始化AI功能

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  cloud-storage:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - cloud_data:/tmp/cloud_storage
+      - cache_data:/tmp/local_cache
+      - ai_data:/tmp/ai_analysis
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ENABLE_CORS=false
+    restart: unless-stopped
+
+volumes:
+  cloud_data:
+  cache_data:
+  ai_data:
+
